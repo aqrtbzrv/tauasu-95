@@ -4,10 +4,8 @@ import { useStore } from '@/lib/store';
 import { Moon, Sun } from 'lucide-react';
 
 const ThemeToggle = () => {
-  const { theme, toggleTheme } = useStore((state) => ({
-    theme: state.theme,
-    toggleTheme: state.toggleTheme,
-  }));
+  const theme = useStore((state) => state.theme);
+  const toggleTheme = useStore((state) => state.toggleTheme);
 
   return (
     <Button

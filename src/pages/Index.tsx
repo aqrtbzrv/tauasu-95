@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useStore } from '@/lib/store';
 import AuthForm from '@/components/AuthForm';
 import Header from '@/components/Header';
@@ -10,14 +10,22 @@ import BookingForm from '@/components/BookingForm';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { PlusIcon, CalendarDaysIcon, TableIcon } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const Index = () => {
   const { currentUser, editBooking, currentBooking, isEditingBooking } = useStore();
   const [formOpen, setFormOpen] = useState(false);
+  const navigate = useNavigate();
   
-  // Handle logout redirect
+  useEffect(() => {
+    if (!currentUser) {
+      navigate('/login');
+    }
+  }, [currentUser, navigate]);
+  
+  // If not logged in and initial render, show loading or redirect
   if (!currentUser) {
-    return <AuthForm />;
+    return null; // Will redirect via useEffect
   }
   
   const handleAddBooking = () => {
