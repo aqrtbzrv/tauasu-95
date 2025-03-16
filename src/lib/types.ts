@@ -37,6 +37,7 @@ export interface Booking {
 }
 
 export interface AppState {
+  // State
   currentUser: User | null;
   theme: 'light' | 'dark';
   zones: Zone[];
@@ -45,4 +46,25 @@ export interface AppState {
   selectedDate: string;
   isEditingBooking: boolean;
   currentBooking: Booking | null;
+  
+  // Auth actions
+  login: (username: string, password: string) => boolean;
+  logout: () => void;
+  
+  // Theme actions
+  toggleTheme: () => void;
+  
+  // Booking actions
+  setSelectedZoneType: (zoneType: ZoneType | 'all') => void;
+  setSelectedDate: (date: string) => void;
+  addBooking: (booking: Omit<Booking, 'id' | 'createdAt' | 'updatedAt'>) => void;
+  updateBooking: (id: string, bookingData: Partial<Booking>) => void;
+  deleteBooking: (id: string) => void;
+  editBooking: (booking: Booking | null) => void;
+  
+  // Helper methods
+  getFilteredBookings: () => Booking[];
+  getZoneById: (id: string) => Zone | undefined;
+  getZonesByType: (type: ZoneType | 'all') => Zone[];
+  isZoneBooked: (zoneId: string, dateTime: string) => boolean;
 }
