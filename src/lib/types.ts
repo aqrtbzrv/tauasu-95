@@ -36,12 +36,22 @@ export interface Booking {
   updatedAt: string;
 }
 
+export interface Customer {
+  id: string;
+  name: string;
+  phoneNumber: string;
+  notes?: string;
+  bookingsCount: number;
+  lastBooking: string;
+}
+
 export interface AppState {
   // State
   currentUser: User | null;
   theme: 'light' | 'dark';
   zones: Zone[];
   bookings: Booking[];
+  customers: Customer[];
   selectedZoneType: ZoneType | 'all';
   selectedDate: string;
   isEditingBooking: boolean;
@@ -66,9 +76,15 @@ export interface AppState {
   deleteBooking: (id: string) => void;
   editBooking: (booking: Booking | null) => void;
   
+  // Customer actions
+  getCustomers: () => Customer[];
+  updateCustomerNotes: (phoneNumber: string, notes: string) => Promise<void>;
+  
   // Helper methods
   getFilteredBookings: () => Booking[];
   getZoneById: (id: string) => Zone | undefined;
   getZonesByType: (type: ZoneType | 'all') => Zone[];
   isZoneBooked: (zoneId: string, dateTime: string) => boolean;
+  getSortedBookings: () => Booking[];
+  getBookingsInDateRange: (startDate: Date, endDate: Date) => Booking[];
 }

@@ -1,11 +1,11 @@
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { AppState, Booking, User, Zone, ZoneType } from './types';
+import { AppState, Booking, Customer, User, Zone, ZoneType } from './types';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { v4 as uuidv4 } from 'uuid';
-import { format } from 'date-fns';
+import { format, parseISO, isAfter, isBefore, isEqual } from 'date-fns';
 
 // Define our initial zones
 const initialZones: Zone[] = [
@@ -44,6 +44,7 @@ export const useStore = create<AppState>()(
       theme: 'light',
       zones: initialZones,
       bookings: [],
+      customers: [],
       selectedZoneType: 'all',
       selectedDate: today,
       isEditingBooking: false,
@@ -126,6 +127,28 @@ export const useStore = create<AppState>()(
             }));
             
             set({ bookings: formattedBookings });
+            
+            // Generate customers list from bookings
+            const customersMap = new Map<string, Customer>();
+            
+            formattedBookings.forEach(booking => {
+              const existingCustomer = customersMap.get(booking.phoneNumber);
+              const lastBookingDate = existingCustomer ? 
+                (isAfter(new Date(booking.dateTime), new Date(existingCustomer.lastBooking)) ? 
+                  booking.dateTime : existingCustomer.lastBooking) : 
+                booking.dateTime;
+              
+              customersMap.set(booking.phoneNumber, {
+                id: booking.phoneNumber,
+                name: booking.clientName,
+                phoneNumber: booking.phoneNumber,
+                notes: existingCustomer?.notes || '',
+                bookingsCount: (existingCustomer?.bookingsCount || 0) + 1,
+                lastBooking: lastBookingDate
+              });
+            });
+            
+            set({ customers: Array.from(customersMap.values()) });
           }
         } catch (error) {
           console.error('Error fetching bookings:', error);
@@ -210,11 +233,30 @@ export const useStore = create<AppState>()(
             };
             
             // Update local state
-            set((state) => ({
-              bookings: [...state.bookings, newBooking],
-              isEditingBooking: false,
-              currentBooking: null,
-            }));
+            set((state) => {
+              // Update customers list
+              const customersMap = new Map<string, Customer>();
+              state.customers.forEach(c => customersMap.set(c.phoneNumber, c));
+              
+              const existingCustomer = customersMap.get(newBooking.phoneNumber);
+              const customer: Customer = {
+                id: newBooking.phoneNumber,
+                name: newBooking.clientName,
+                phoneNumber: newBooking.phoneNumber,
+                notes: existingCustomer?.notes || '',
+                bookingsCount: (existingCustomer?.bookingsCount || 0) + 1,
+                lastBooking: newBooking.dateTime
+              };
+              
+              customersMap.set(newBooking.phoneNumber, customer);
+              
+              return {
+                bookings: [...state.bookings, newBooking],
+                customers: Array.from(customersMap.values()),
+                isEditingBooking: false,
+                currentBooking: null,
+              };
+            });
             
             toast.success('Бронирование успешно добавлено');
           }
@@ -254,15 +296,52 @@ export const useStore = create<AppState>()(
           }
           
           // Update local state
-          set((state) => ({
-            bookings: state.bookings.map((booking) =>
+          set((state) => {
+            const updatedBookings = state.bookings.map((booking) =>
               booking.id === id
                 ? { ...booking, ...bookingData, updatedAt: updateData.updated_at }
                 : booking
-            ),
-            isEditingBooking: false,
-            currentBooking: null,
-          }));
+            );
+            
+            // Recalculate customers based on updated bookings
+            const customersMap = new Map<string, Customer>();
+            
+            state.customers.forEach(c => customersMap.set(c.phoneNumber, {
+              ...c,
+              bookingsCount: 0,
+              lastBooking: ''
+            }));
+            
+            updatedBookings.forEach(booking => {
+              const existingCustomer = customersMap.get(booking.phoneNumber) || {
+                id: booking.phoneNumber,
+                name: booking.clientName,
+                phoneNumber: booking.phoneNumber,
+                notes: '',
+                bookingsCount: 0,
+                lastBooking: booking.dateTime
+              };
+              
+              const lastBookingDate = existingCustomer.lastBooking ? 
+                (isAfter(new Date(booking.dateTime), new Date(existingCustomer.lastBooking)) ? 
+                  booking.dateTime : existingCustomer.lastBooking) : 
+                booking.dateTime;
+              
+              customersMap.set(booking.phoneNumber, {
+                ...existingCustomer,
+                name: booking.clientName, // Update name to latest
+                bookingsCount: existingCustomer.bookingsCount + 1,
+                lastBooking: lastBookingDate
+              });
+            });
+            
+            return {
+              bookings: updatedBookings,
+              customers: Array.from(customersMap.values()),
+              isEditingBooking: false,
+              currentBooking: null,
+            };
+          });
           
           toast.success('Бронирование успешно обновлено');
         } catch (error) {
@@ -286,9 +365,57 @@ export const useStore = create<AppState>()(
           }
           
           // Update local state
-          set((state) => ({
-            bookings: state.bookings.filter((booking) => booking.id !== id),
-          }));
+          set((state) => {
+            const deletedBooking = state.bookings.find(booking => booking.id === id);
+            const remainingBookings = state.bookings.filter((booking) => booking.id !== id);
+            
+            // Recalculate customers
+            const customersMap = new Map<string, Customer>();
+            
+            state.customers.forEach(c => customersMap.set(c.phoneNumber, {
+              ...c,
+              bookingsCount: 0,
+              lastBooking: ''
+            }));
+            
+            remainingBookings.forEach(booking => {
+              const existingCustomer = customersMap.get(booking.phoneNumber);
+              if (existingCustomer) {
+                const lastBookingDate = existingCustomer.lastBooking ? 
+                  (isAfter(new Date(booking.dateTime), new Date(existingCustomer.lastBooking)) ? 
+                    booking.dateTime : existingCustomer.lastBooking) : 
+                  booking.dateTime;
+                
+                customersMap.set(booking.phoneNumber, {
+                  ...existingCustomer,
+                  bookingsCount: existingCustomer.bookingsCount + 1,
+                  lastBooking: lastBookingDate
+                });
+              } else {
+                customersMap.set(booking.phoneNumber, {
+                  id: booking.phoneNumber,
+                  name: booking.clientName,
+                  phoneNumber: booking.phoneNumber,
+                  notes: '',
+                  bookingsCount: 1,
+                  lastBooking: booking.dateTime
+                });
+              }
+            });
+            
+            // Remove customer if no bookings left
+            if (deletedBooking) {
+              const customer = customersMap.get(deletedBooking.phoneNumber);
+              if (customer && customer.bookingsCount === 0) {
+                customersMap.delete(deletedBooking.phoneNumber);
+              }
+            }
+            
+            return {
+              bookings: remainingBookings,
+              customers: Array.from(customersMap.values())
+            };
+          });
           
           toast.success('Бронирование успешно удалено');
         } catch (error) {
@@ -302,6 +429,23 @@ export const useStore = create<AppState>()(
           isEditingBooking: booking !== null,
           currentBooking: booking,
         });
+      },
+
+      // Customer actions
+      getCustomers: () => {
+        return get().customers;
+      },
+      
+      updateCustomerNotes: async (phoneNumber: string, notes: string) => {
+        set((state) => ({
+          customers: state.customers.map(customer => 
+            customer.phoneNumber === phoneNumber 
+              ? { ...customer, notes }
+              : customer
+          )
+        }));
+        
+        toast.success('Примечание о клиенте обновлено');
       },
 
       // Helper methods
@@ -323,6 +467,24 @@ export const useStore = create<AppState>()(
           }
           
           return true;
+        });
+      },
+
+      getSortedBookings: () => {
+        const { bookings } = get();
+        return [...bookings].sort((a, b) => {
+          const dateA = new Date(a.dateTime);
+          const dateB = new Date(b.dateTime);
+          return dateA.getTime() - dateB.getTime();
+        });
+      },
+      
+      getBookingsInDateRange: (startDate: Date, endDate: Date) => {
+        const { bookings } = get();
+        return bookings.filter(booking => {
+          const bookingDate = new Date(booking.dateTime);
+          return (isAfter(bookingDate, startDate) || isEqual(bookingDate, startDate)) && 
+                 (isBefore(bookingDate, endDate) || isEqual(bookingDate, endDate));
         });
       },
 

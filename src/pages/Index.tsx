@@ -7,9 +7,17 @@ import ZoneFilter from '@/components/ZoneFilter';
 import BookingTable from '@/components/BookingTable';
 import BookingCalendar from '@/components/BookingCalendar';
 import BookingForm from '@/components/BookingForm';
+import CustomersDatabase from '@/components/CustomersDatabase';
+import AnalyticsView from '@/components/AnalyticsView';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { PlusIcon, CalendarDaysIcon, TableIcon } from 'lucide-react';
+import { 
+  PlusIcon, 
+  CalendarDaysIcon, 
+  TableIcon, 
+  UsersIcon, 
+  BarChartIcon 
+} from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const Index = () => {
@@ -56,7 +64,7 @@ const Index = () => {
         <ZoneFilter />
         
         <Tabs defaultValue="table" className="space-y-6">
-          <TabsList>
+          <TabsList className="grid grid-cols-2 md:grid-cols-4 mb-4">
             <TabsTrigger value="table" className="flex items-center">
               <TableIcon className="mr-2 h-4 w-4" />
               Таблица
@@ -64,6 +72,14 @@ const Index = () => {
             <TabsTrigger value="calendar" className="flex items-center">
               <CalendarDaysIcon className="mr-2 h-4 w-4" />
               Календарь
+            </TabsTrigger>
+            <TabsTrigger value="customers" className="flex items-center">
+              <UsersIcon className="mr-2 h-4 w-4" />
+              Клиенты
+            </TabsTrigger>
+            <TabsTrigger value="analytics" className="flex items-center">
+              <BarChartIcon className="mr-2 h-4 w-4" />
+              Аналитика
             </TabsTrigger>
           </TabsList>
           
@@ -73,6 +89,14 @@ const Index = () => {
           
           <TabsContent value="calendar" className="animate-in fade-in-50">
             <BookingCalendar />
+          </TabsContent>
+          
+          <TabsContent value="customers" className="animate-in fade-in-50">
+            <CustomersDatabase />
+          </TabsContent>
+          
+          <TabsContent value="analytics" className="animate-in fade-in-50">
+            <AnalyticsView />
           </TabsContent>
         </Tabs>
         

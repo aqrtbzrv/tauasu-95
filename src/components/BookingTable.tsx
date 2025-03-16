@@ -19,22 +19,32 @@ import { Booking } from '@/lib/types';
 const BookingTable = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
-  const getFilteredBookings = useStore((state) => state.getFilteredBookings);
+  const getSortedBookings = useStore((state) => state.getSortedBookings);
   const getZoneById = useStore((state) => state.getZoneById);
   const editBooking = useStore((state) => state.editBooking);
   const deleteBooking = useStore((state) => state.deleteBooking);
+  const selectedDate = useStore((state) => state.selectedDate);
+  const selectedZoneType = useStore((state) => state.selectedZoneType);
   const currentUser = useStore((state) => state.currentUser);
   const isAdmin = currentUser?.role === 'admin';
   
-  const bookings = getFilteredBookings();
+  // Get sorted bookings
+  const bookings = getSortedBookings();
   
+  // Filter bookings by date and zone type if selected
   const filteredBookings = bookings.filter((booking) => {
     const searchLower = searchQuery.toLowerCase();
-    return (
-      booking.clientName.toLowerCase().includes(searchLower) ||
-      booking.phoneNumber.includes(searchQuery) ||
-      getZoneById(booking.zoneId)?.name.toLowerCase().includes(searchLower)
-    );
+    const bookingDate = booking.dateTime.split('T')[0];
+    const zone = getZoneById(booking.zoneId);
+    
+    const matchesSearch = booking.clientName.toLowerCase().includes(searchLower) ||
+                           booking.phoneNumber.includes(searchQuery) ||
+                           (zone?.name.toLowerCase().includes(searchLower) || false);
+    
+    const matchesDate = selectedDate === 'all' || bookingDate === selectedDate;
+    const matchesZoneType = selectedZoneType === 'all' || zone?.type === selectedZoneType;
+    
+    return matchesSearch && matchesDate && matchesZoneType;
   });
 
   const formatDate = (dateTime: string) => {
