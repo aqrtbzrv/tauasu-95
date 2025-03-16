@@ -54,6 +54,10 @@ export interface AppState {
   // Theme actions
   toggleTheme: () => void;
   
+  // Supabase synchronization
+  fetchBookingsFromSupabase: () => Promise<void>;
+  setupRealtimeSubscription: () => void;
+  
   // Booking actions
   setSelectedZoneType: (zoneType: ZoneType | 'all') => void;
   setSelectedDate: (date: string) => void;
