@@ -14,6 +14,7 @@ const queryClient = new QueryClient();
 
 const App = () => {
   const theme = useStore((state) => state.theme);
+  const currentUser = useStore((state) => state.currentUser);
   
   // Update the theme class on the html element
   useEffect(() => {
@@ -31,8 +32,14 @@ const App = () => {
         <Sonner />
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/login" element={<AuthForm />} />
+            <Route 
+              path="/" 
+              element={currentUser ? <Index /> : <Navigate to="/login" replace />} 
+            />
+            <Route 
+              path="/login" 
+              element={currentUser ? <Navigate to="/" replace /> : <AuthForm />} 
+            />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
