@@ -24,6 +24,7 @@ const Index = () => {
   const { currentUser, editBooking, currentBooking, isEditingBooking } = useStore();
   const [formOpen, setFormOpen] = useState(false);
   const navigate = useNavigate();
+  const isAdmin = currentUser?.role === 'admin';
   
   useEffect(() => {
     if (!currentUser) {
@@ -55,10 +56,12 @@ const Index = () => {
       <main className="flex-1 container mx-auto px-4 py-8">
         <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <h1 className="text-2xl font-bold">Управление бронированиями</h1>
-          <Button onClick={handleAddBooking} className="shrink-0">
-            <PlusIcon className="mr-2 h-4 w-4" />
-            Новое бронирование
-          </Button>
+          {isAdmin && (
+            <Button onClick={handleAddBooking} className="shrink-0">
+              <PlusIcon className="mr-2 h-4 w-4" />
+              Новое бронирование
+            </Button>
+          )}
         </div>
         
         <ZoneFilter />

@@ -79,6 +79,7 @@ export interface AppState {
   // Customer actions
   getCustomers: () => Customer[];
   updateCustomerNotes: (phoneNumber: string, notes: string) => Promise<void>;
+  exportCustomersToExcel: () => void;
   
   // Helper methods
   getFilteredBookings: () => Booking[];

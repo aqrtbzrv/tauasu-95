@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar } from '@/components/ui/calendar';
 import { ru } from 'date-fns/locale';
 import { CalendarIcon } from 'lucide-react';
-import { format, isToday, parseISO } from 'date-fns';
+import { format, isToday, parseISO, addHours } from 'date-fns';
 import { Booking } from '@/lib/types';
 import { 
   Dialog, 
@@ -16,6 +16,9 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { EditIcon, Trash2Icon } from 'lucide-react';
+
+// Часовой пояс Алматы GMT+5
+const TIMEZONE_OFFSET = 5;
 
 const BookingCalendar = () => {
   const selectedDate = useStore((state) => state.selectedDate);
@@ -54,8 +57,10 @@ const BookingCalendar = () => {
   };
 
   const formatDateTime = (dateTime: string) => {
+    // Применяем часовой пояс Алматы GMT+5
     const date = parseISO(dateTime);
-    return format(date, 'HH:mm');
+    const dateWithTZ = addHours(date, TIMEZONE_OFFSET);
+    return format(dateWithTZ, 'HH:mm');
   };
 
   const formatMoney = (amount: number) => {
@@ -67,8 +72,10 @@ const BookingCalendar = () => {
   };
 
   const formatDate = (dateTime: string) => {
+    // Применяем часовой пояс Алматы GMT+5
     const date = parseISO(dateTime);
-    return format(date, 'dd.MM.yyyy HH:mm', { locale: ru });
+    const dateWithTZ = addHours(date, TIMEZONE_OFFSET);
+    return format(dateWithTZ, 'dd.MM.yyyy HH:mm', { locale: ru });
   };
 
   const handleBookingClick = (booking: Booking) => {

@@ -16,7 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-import { CalendarIcon } from 'lucide-react';
+import { CalendarIcon, BarChart3, PieChart as PieChartIcon, Users, Clock } from 'lucide-react';
 
 const timeRanges = [
   { value: '1month', label: '1 месяц' },
@@ -126,7 +126,7 @@ const AnalyticsView = () => {
     return hourlyCount.map((count, hour) => ({
       name: `${hour}:00`,
       count
-    }));
+    })).filter(item => item.count > 0);
   }, [filteredBookings]);
   
   const guestCountDistribution = useMemo(() => {
@@ -149,132 +149,146 @@ const AnalyticsView = () => {
   
   const totalBookings = filteredBookings.length;
   const totalGuests = filteredBookings.reduce((sum, booking) => sum + booking.personCount, 0);
-  const totalRevenue = filteredBookings.reduce((sum, booking) => sum + booking.rentalCost, 0);
   const averageGuestsPerBooking = totalBookings > 0 ? totalGuests / totalBookings : 0;
   
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#a569bd', '#fd79a8', '#74b9ff'];
+  const COLORS = ['#4CAF50', '#8BC34A', '#CDDC39', '#FFC107', '#FF9800', '#FF5722', '#9C27B0', '#2196F3'];
   
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row items-start md:items-center gap-4 mb-4">
-        <Select value={selectedRange} onValueChange={handleRangeChange}>
-          <SelectTrigger className="w-[200px]">
-            <SelectValue placeholder="Выберите период" />
-          </SelectTrigger>
-          <SelectContent>
-            {timeRanges.map(range => (
-              <SelectItem key={range.value} value={range.value}>{range.label}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        
-        {customDateRange && (
-          <div className="flex items-center space-x-2">
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  id="date"
-                  variant={"outline"}
-                  className={cn(
-                    "w-[200px] justify-start text-left font-normal",
-                    !startDate && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {startDate ? format(startDate, "PPP", { locale: ru }) : (
-                    <span>Начальная дата</span>
-                  )}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={startDate}
-                  onSelect={setStartDate}
-                  initialFocus
-                  className="pointer-events-auto"
-                />
-              </PopoverContent>
-            </Popover>
-            <span>—</span>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  id="date"
-                  variant={"outline"}
-                  className={cn(
-                    "w-[200px] justify-start text-left font-normal",
-                    !endDate && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {endDate ? format(endDate, "PPP", { locale: ru }) : (
-                    <span>Конечная дата</span>
-                  )}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={endDate}
-                  onSelect={setEndDate}
-                  initialFocus
-                  className="pointer-events-auto"
-                />
-              </PopoverContent>
-            </Popover>
+      <Card className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-green-100 dark:border-green-800">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-xl flex items-center gap-2">
+            <BarChart3 className="h-5 w-5" />
+            Статистика бронирований
+          </CardTitle>
+          <CardDescription>
+            Аналитика бронирований и гостей за выбранный период
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col md:flex-row items-start md:items-center gap-4 mb-4">
+            <Select value={selectedRange} onValueChange={handleRangeChange}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="Выберите период" />
+              </SelectTrigger>
+              <SelectContent>
+                {timeRanges.map(range => (
+                  <SelectItem key={range.value} value={range.value}>{range.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            
+            {customDateRange && (
+              <div className="flex items-center space-x-2">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      id="date"
+                      variant={"outline"}
+                      className={cn(
+                        "w-[200px] justify-start text-left font-normal",
+                        !startDate && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {startDate ? format(startDate, "PPP", { locale: ru }) : (
+                        <span>Начальная дата</span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={startDate}
+                      onSelect={setStartDate}
+                      initialFocus
+                      locale={ru}
+                      className="pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
+                <span>—</span>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      id="date"
+                      variant={"outline"}
+                      className={cn(
+                        "w-[200px] justify-start text-left font-normal",
+                        !endDate && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {endDate ? format(endDate, "PPP", { locale: ru }) : (
+                        <span>Конечная дата</span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={endDate}
+                      onSelect={setEndDate}
+                      initialFocus
+                      locale={ru}
+                      className="pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            )}
           </div>
-        )}
-      </div>
+        </CardContent>
+      </Card>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <Card className="bg-white dark:bg-gray-800 shadow-md dark:shadow-none">
           <CardHeader className="pb-2">
-            <CardTitle className="text-xl">Всего бронирований</CardTitle>
+            <CardTitle className="text-xl flex items-center gap-2">
+              <BarChart3 className="h-5 w-5 text-green-600" />
+              <span>Всего бронирований</span>
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{totalBookings}</div>
+            <div className="text-3xl font-bold text-green-600">{totalBookings}</div>
+            <p className="text-sm text-muted-foreground mt-1">За выбранный период</p>
           </CardContent>
         </Card>
         
-        <Card>
+        <Card className="bg-white dark:bg-gray-800 shadow-md dark:shadow-none">
           <CardHeader className="pb-2">
-            <CardTitle className="text-xl">Всего гостей</CardTitle>
+            <CardTitle className="text-xl flex items-center gap-2">
+              <Users className="h-5 w-5 text-green-600" />
+              <span>Всего гостей</span>
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{totalGuests}</div>
+            <div className="text-3xl font-bold text-green-600">{totalGuests}</div>
+            <p className="text-sm text-muted-foreground mt-1">Общее количество за период</p>
           </CardContent>
         </Card>
         
-        <Card>
+        <Card className="bg-white dark:bg-gray-800 shadow-md dark:shadow-none">
           <CardHeader className="pb-2">
-            <CardTitle className="text-xl">Средняя загрузка</CardTitle>
+            <CardTitle className="text-xl flex items-center gap-2">
+              <Users className="h-5 w-5 text-green-600" />
+              <span>Средняя загрузка</span>
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{averageGuestsPerBooking.toFixed(1)} гостей</div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-xl">Общая выручка</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">
-              {new Intl.NumberFormat('ru-RU', {
-                style: 'currency',
-                currency: 'KZT',
-                maximumFractionDigits: 0
-              }).format(totalRevenue)}
-            </div>
+            <div className="text-3xl font-bold text-green-600">{averageGuestsPerBooking.toFixed(1)} <span className="text-base">гостей</span></div>
+            <p className="text-sm text-muted-foreground mt-1">В среднем на одно бронирование</p>
           </CardContent>
         </Card>
       </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="overflow-hidden">
+        <Card className="overflow-hidden bg-white dark:bg-gray-800 shadow-md dark:shadow-none">
           <CardHeader>
-            <CardTitle>Занятость зон</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart3 className="h-5 w-5 text-green-600" />
+              <span>Занятость зон</span>
+            </CardTitle>
             <CardDescription>
               Количество бронирований по каждой зоне за выбранный период
             </CardDescription>
@@ -296,7 +310,7 @@ const AnalyticsView = () => {
                       tickFormatter={(value) => value.length > 10 ? `${value.slice(0, 10)}...` : value}
                     />
                     <Tooltip formatter={(value) => [`${value} бронирований`, 'Количество']} />
-                    <Bar dataKey="value" fill="#8884d8" />
+                    <Bar dataKey="value" fill="#4CAF50" />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
@@ -308,9 +322,12 @@ const AnalyticsView = () => {
           </CardContent>
         </Card>
         
-        <Card className="overflow-hidden">
+        <Card className="overflow-hidden bg-white dark:bg-gray-800 shadow-md dark:shadow-none">
           <CardHeader>
-            <CardTitle>Распределение по типам зон</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <PieChartIcon className="h-5 w-5 text-green-600" />
+              <span>Распределение по типам зон</span>
+            </CardTitle>
             <CardDescription>
               Популярность различных типов зон за выбранный период
             </CardDescription>
@@ -347,19 +364,22 @@ const AnalyticsView = () => {
           </CardContent>
         </Card>
         
-        <Card className="overflow-hidden">
+        <Card className="overflow-hidden bg-white dark:bg-gray-800 shadow-md dark:shadow-none">
           <CardHeader>
-            <CardTitle>Часы пиковой нагрузки</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <Clock className="h-5 w-5 text-green-600" />
+              <span>Часы пиковой нагрузки</span>
+            </CardTitle>
             <CardDescription>
               Распределение бронирований по часам дня
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="h-[300px]">
-              {filteredBookings.length > 0 ? (
+              {hourlyDistributionData.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
-                    data={hourlyDistributionData.filter(item => item.count > 0)}
+                    data={hourlyDistributionData}
                     margin={{ top: 20, right: 30, left: 20, bottom: 40 }}
                   >
                     <XAxis 
@@ -370,7 +390,7 @@ const AnalyticsView = () => {
                     />
                     <YAxis />
                     <Tooltip formatter={(value) => [`${value} бронирований`, 'Количество']} />
-                    <Bar dataKey="count" fill="#82ca9d" />
+                    <Bar dataKey="count" fill="#8BC34A" />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
@@ -382,9 +402,12 @@ const AnalyticsView = () => {
           </CardContent>
         </Card>
         
-        <Card className="overflow-hidden">
+        <Card className="overflow-hidden bg-white dark:bg-gray-800 shadow-md dark:shadow-none">
           <CardHeader>
-            <CardTitle>Распределение количества гостей</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5 text-green-600" />
+              <span>Распределение количества гостей</span>
+            </CardTitle>
             <CardDescription>
               Соотношение бронирований по количеству гостей
             </CardDescription>
@@ -400,7 +423,7 @@ const AnalyticsView = () => {
                     <XAxis dataKey="name" />
                     <YAxis />
                     <Tooltip formatter={(value) => [`${value} бронирований`, 'Количество']} />
-                    <Bar dataKey="count" fill="#ff7c43" />
+                    <Bar dataKey="count" fill="#FFC107" />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (

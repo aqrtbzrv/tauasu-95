@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { v4 as uuidv4 } from 'uuid';
 import { format, parseISO, isAfter, isBefore, isEqual } from 'date-fns';
+import * as XLSX from 'xlsx';
 
 // Define our initial zones
 const initialZones: Zone[] = [
@@ -126,7 +127,16 @@ export const useStore = create<AppState>()(
               updatedAt: booking.updated_at
             }));
             
-            set({ bookings: formattedBookings });
+            // Сортировка бронирований по дате (от ближайших к дальним)
+            const sortedBookings = formattedBookings.sort((a, b) => {
+              return new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime();
+            });
+            
+            set({ bookings: sortedBookings });
+            
+            // Получим данные о примечаниях клиентов из localStorage
+            const storedCustomerNotes = localStorage.getItem('customerNotes');
+            const customerNotes = storedCustomerNotes ? JSON.parse(storedCustomerNotes) : {};
             
             // Generate customers list from bookings
             const customersMap = new Map<string, Customer>();
@@ -142,7 +152,7 @@ export const useStore = create<AppState>()(
                 id: booking.phoneNumber,
                 name: booking.clientName,
                 phoneNumber: booking.phoneNumber,
-                notes: existingCustomer?.notes || '',
+                notes: customerNotes[booking.phoneNumber] || existingCustomer?.notes || '',
                 bookingsCount: (existingCustomer?.bookingsCount || 0) + 1,
                 lastBooking: lastBookingDate
               });
@@ -250,8 +260,13 @@ export const useStore = create<AppState>()(
               
               customersMap.set(newBooking.phoneNumber, customer);
               
+              // Сортировка бронирований по дате (от ближайших к дальним)
+              const sortedBookings = [...state.bookings, newBooking].sort((a, b) => {
+                return new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime();
+              });
+              
               return {
-                bookings: [...state.bookings, newBooking],
+                bookings: sortedBookings,
                 customers: Array.from(customersMap.values()),
                 isEditingBooking: false,
                 currentBooking: null,
@@ -303,6 +318,11 @@ export const useStore = create<AppState>()(
                 : booking
             );
             
+            // Пересортировка бронирований
+            const sortedBookings = [...updatedBookings].sort((a, b) => {
+              return new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime();
+            });
+            
             // Recalculate customers based on updated bookings
             const customersMap = new Map<string, Customer>();
             
@@ -312,7 +332,7 @@ export const useStore = create<AppState>()(
               lastBooking: ''
             }));
             
-            updatedBookings.forEach(booking => {
+            sortedBookings.forEach(booking => {
               const existingCustomer = customersMap.get(booking.phoneNumber) || {
                 id: booking.phoneNumber,
                 name: booking.clientName,
@@ -336,7 +356,7 @@ export const useStore = create<AppState>()(
             });
             
             return {
-              bookings: updatedBookings,
+              bookings: sortedBookings,
               customers: Array.from(customersMap.values()),
               isEditingBooking: false,
               currentBooking: null,
@@ -437,15 +457,63 @@ export const useStore = create<AppState>()(
       },
       
       updateCustomerNotes: async (phoneNumber: string, notes: string) => {
-        set((state) => ({
-          customers: state.customers.map(customer => 
+        set((state) => {
+          const updatedCustomers = state.customers.map(customer => 
             customer.phoneNumber === phoneNumber 
               ? { ...customer, notes }
               : customer
-          )
-        }));
+          );
+          
+          // Сохраним примечания в localStorage для постоянного хранения
+          const customerNotes = {};
+          updatedCustomers.forEach(customer => {
+            if (customer.notes) {
+              customerNotes[customer.phoneNumber] = customer.notes;
+            }
+          });
+          
+          localStorage.setItem('customerNotes', JSON.stringify(customerNotes));
+          
+          return { customers: updatedCustomers };
+        });
         
         toast.success('Примечание о клиенте обновлено');
+      },
+      
+      exportCustomersToExcel: () => {
+        const customers = get().customers;
+        
+        // Преобразуем данные для Excel
+        const data = customers.map(customer => ({
+          'Имя клиента': customer.name,
+          'Номер телефона': customer.phoneNumber,
+          'Количество бронирований': customer.bookingsCount,
+          'Последнее бронирование': format(new Date(customer.lastBooking), 'dd.MM.yyyy HH:mm'),
+          'Примечания': customer.notes || ''
+        }));
+        
+        // Создаем новую книгу Excel
+        const workbook = XLSX.utils.book_new();
+        const worksheet = XLSX.utils.json_to_sheet(data);
+        
+        // Задаем ширину столбцов
+        const columnWidths = [
+          { wch: 25 }, // Имя
+          { wch: 20 }, // Номер телефона
+          { wch: 15 }, // Количество бронирований
+          { wch: 25 }, // Последнее бронирование
+          { wch: 40 }  // Примечания
+        ];
+        worksheet['!cols'] = columnWidths;
+        
+        // Добавляем лист в книгу
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Клиенты');
+        
+        // Генерируем Excel-файл и скачиваем его
+        const currentDate = format(new Date(), 'dd-MM-yyyy');
+        XLSX.writeFile(workbook, `Клиенты_Тауасу_${currentDate}.xlsx`);
+        
+        toast.success('Данные клиентов успешно экспортированы');
       },
 
       // Helper methods
