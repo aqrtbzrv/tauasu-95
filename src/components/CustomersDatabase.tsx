@@ -5,11 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { format, parseISO } from 'date-fns';
 import { ru } from 'date-fns/locale';
-import { Search, Download, Users, PhoneIcon } from 'lucide-react';
+import { Search, Download, Users, PhoneIcon, XIcon } from 'lucide-react';
 import { Customer } from '@/lib/types';
 
 const CustomersDatabase = () => {
@@ -152,8 +152,17 @@ const CustomersDatabase = () => {
       </Card>
 
       <Dialog open={selectedCustomer !== null} onOpenChange={handleCloseDetails}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
+        <DialogContent className="sm:max-w-md max-h-[90vh] p-6 rounded-lg overflow-y-auto">
+          <DialogHeader className="relative">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="absolute right-0 top-0" 
+              onClick={handleCloseDetails}
+            >
+              <XIcon className="h-4 w-4" />
+              <span className="sr-only">Закрыть</span>
+            </Button>
             <DialogTitle>Информация о клиенте</DialogTitle>
           </DialogHeader>
           {selectedCustomer && (
@@ -213,11 +222,14 @@ const CustomersDatabase = () => {
                 )}
               </div>
 
-              {isAdmin && (
-                <div className="flex justify-end">
+              <DialogFooter>
+                {isAdmin && (
                   <Button onClick={handleSaveNotes}>Сохранить примечание</Button>
-                </div>
-              )}
+                )}
+                <Button variant="outline" onClick={handleCloseDetails}>
+                  Закрыть
+                </Button>
+              </DialogFooter>
             </div>
           )}
         </DialogContent>

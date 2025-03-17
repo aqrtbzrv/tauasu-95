@@ -1,10 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import { useStore } from '@/lib/store';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar } from '@/components/ui/calendar';
 import { ru } from 'date-fns/locale';
-import { CalendarIcon, PhoneIcon } from 'lucide-react';
+import { CalendarIcon, PhoneIcon, XIcon } from 'lucide-react';
 import { format, isToday, parseISO, addHours } from 'date-fns';
 import { Booking } from '@/lib/types';
 import { 
@@ -12,7 +11,8 @@ import {
   DialogContent, 
   DialogDescription, 
   DialogHeader, 
-  DialogTitle 
+  DialogTitle,
+  DialogFooter
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { EditIcon, Trash2Icon } from 'lucide-react';
@@ -136,6 +136,7 @@ const BookingCalendar = () => {
               className="rounded-md border p-3 pointer-events-auto max-w-full"
               modifiers={{
                 booked: getBookingDates(),
+                selected: selectedDate ? [new Date(selectedDate)] : [],
               }}
               modifiersStyles={{
                 booked: {
@@ -143,13 +144,24 @@ const BookingCalendar = () => {
                   backgroundColor: 'hsl(var(--primary) / 0.2)',
                   color: 'hsl(var(--primary))',
                 },
+                selected: {
+                  backgroundColor: '#ea384c',
+                  color: 'white',
+                  fontWeight: 'bold',
+                },
               }}
             />
           </div>
           <div className="mt-4 text-sm text-muted-foreground">
-            <div className="flex items-center">
-              <div className="mr-2 h-3 w-3 rounded-full bg-primary/20"></div>
-              <span>Есть бронирования</span>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <div className="mr-2 h-3 w-3 rounded-full bg-primary/20"></div>
+                <span>Есть бронирования</span>
+              </div>
+              <div className="flex items-center">
+                <div className="mr-2 h-3 w-3 rounded-full" style={{ backgroundColor: '#ea384c' }}></div>
+                <span>Выбранная дата</span>
+              </div>
             </div>
             <p className="mt-2">
               {isToday(new Date(selectedDate))
@@ -213,10 +225,19 @@ const BookingCalendar = () => {
         </CardContent>
       </Card>
 
-      {/* Booking Details Dialog */}
+      {/* Booking Details Dialog - Updated to half-page style with exit button */}
       <Dialog open={selectedBooking !== null} onOpenChange={closeDetails}>
-        <DialogContent className={`sm:max-w-lg ${isMobile ? 'w-[95vw] max-w-[95vw] p-4' : ''}`}>
-          <DialogHeader>
+        <DialogContent className={`sm:max-w-lg ${isMobile ? 'w-[95vw] max-h-[90vh] max-w-[95vw]' : 'max-h-[90vh]'} p-6 rounded-lg overflow-y-auto`}>
+          <DialogHeader className="relative">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="absolute right-0 top-0" 
+              onClick={closeDetails}
+            >
+              <XIcon className="h-4 w-4" />
+              <span className="sr-only">Закрыть</span>
+            </Button>
             <DialogTitle>Детали бронирования</DialogTitle>
             <DialogDescription>
               Подробная информация о выбранном бронировании
@@ -301,7 +322,7 @@ const BookingCalendar = () => {
               </div>
               
               {isAdmin && (
-                <div className="flex flex-wrap justify-end gap-4 mt-4">
+                <DialogFooter className="flex flex-wrap justify-end gap-4 mt-4">
                   <Button variant="outline" onClick={() => handleEdit(selectedBooking)}>
                     <EditIcon className="mr-2 h-4 w-4" />
                     Редактировать
@@ -310,7 +331,7 @@ const BookingCalendar = () => {
                     <Trash2Icon className="mr-2 h-4 w-4" />
                     Удалить
                   </Button>
-                </div>
+                </DialogFooter>
               )}
             </div>
           )}

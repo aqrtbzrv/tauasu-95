@@ -66,23 +66,35 @@ const Index = () => {
         
         <ZoneFilter />
         
-        <div className="mt-6 rounded-lg bg-card shadow-sm border">
+        <div className="mt-6 rounded-lg bg-card shadow-md border overflow-hidden">
           <Tabs defaultValue="table" className="w-full">
-            <div className="p-1 bg-muted/30 rounded-t-lg border-b">
-              <TabsList className="w-full grid grid-cols-2 md:grid-cols-4 gap-1 p-1 h-auto bg-transparent">
-                <TabsTrigger value="table" className="flex items-center py-2.5 rounded-md data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800">
+            <div className="p-1.5 bg-muted/50 rounded-t-lg border-b">
+              <TabsList className="w-full grid grid-cols-2 md:grid-cols-4 gap-1.5 p-1 h-auto bg-transparent">
+                <TabsTrigger 
+                  value="table" 
+                  className="flex items-center py-3 rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                >
                   <TableIcon className="mr-2 h-4 w-4" />
                   <span className="whitespace-nowrap">Таблица</span>
                 </TabsTrigger>
-                <TabsTrigger value="calendar" className="flex items-center py-2.5 rounded-md data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800">
+                <TabsTrigger 
+                  value="calendar" 
+                  className="flex items-center py-3 rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                >
                   <CalendarDaysIcon className="mr-2 h-4 w-4" />
                   <span className="whitespace-nowrap">Календарь</span>
                 </TabsTrigger>
-                <TabsTrigger value="customers" className="flex items-center py-2.5 rounded-md data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800">
+                <TabsTrigger 
+                  value="customers" 
+                  className="flex items-center py-3 rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                >
                   <UsersIcon className="mr-2 h-4 w-4" />
                   <span className="whitespace-nowrap">Клиенты</span>
                 </TabsTrigger>
-                <TabsTrigger value="analytics" className="flex items-center py-2.5 rounded-md data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800">
+                <TabsTrigger 
+                  value="analytics" 
+                  className="flex items-center py-3 rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                >
                   <BarChartIcon className="mr-2 h-4 w-4" />
                   <span className="whitespace-nowrap">Аналитика</span>
                 </TabsTrigger>

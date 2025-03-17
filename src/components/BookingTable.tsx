@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
@@ -9,10 +8,11 @@ import {
   DialogContent, 
   DialogDescription, 
   DialogHeader, 
-  DialogTitle 
+  DialogTitle,
+  DialogFooter
 } from '@/components/ui/dialog';
-import { EditIcon, SearchIcon, Trash2Icon, PhoneIcon } from 'lucide-react';
-import { format, parseISO, addHours } from 'date-fns';
+import { EditIcon, SearchIcon, Trash2Icon, PhoneIcon, XIcon } from 'lucide-react';
+import { format, parseISO, addHours, startOfMonth, endOfMonth } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { Booking } from '@/lib/types';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -33,23 +33,31 @@ const BookingTable = () => {
   const isAdmin = currentUser?.role === 'admin';
   const isMobile = useIsMobile();
   
-  // Get sorted bookings
+  // Get sorted bookings for the current month
   const bookings = getSortedBookings();
   
-  // Filter bookings by date and zone type if selected
+  // Get current month start and end
+  const now = new Date();
+  const monthStart = startOfMonth(now);
+  const monthEnd = endOfMonth(now);
+  
+  // Filter bookings by date (current month and future) and zone type if selected
   const filteredBookings = bookings.filter((booking) => {
     const searchLower = searchQuery.toLowerCase();
-    const bookingDate = booking.dateTime.split('T')[0];
+    const bookingDate = new Date(booking.dateTime);
     const zone = getZoneById(booking.zoneId);
     
     const matchesSearch = booking.clientName.toLowerCase().includes(searchLower) ||
                            booking.phoneNumber.includes(searchQuery) ||
                            (zone?.name.toLowerCase().includes(searchLower) || false);
     
-    const matchesDate = selectedDate === 'all' || bookingDate === selectedDate;
+    // Include bookings from the current month and future
+    const isCurrentMonthOrFuture = bookingDate >= monthStart;
+    
+    const matchesDate = selectedDate === 'all' || booking.dateTime.split('T')[0] === selectedDate;
     const matchesZoneType = selectedZoneType === 'all' || zone?.type === selectedZoneType;
     
-    return matchesSearch && matchesDate && matchesZoneType;
+    return matchesSearch && (matchesDate || isCurrentMonthOrFuture) && matchesZoneType;
   });
 
   const formatDate = (dateTime: string) => {
@@ -176,10 +184,19 @@ const BookingTable = () => {
         </div>
       </div>
 
-      {/* Booking Details Dialog */}
+      {/* Booking Details Dialog - Updated to half-page style with exit button */}
       <Dialog open={selectedBooking !== null} onOpenChange={closeDetails}>
-        <DialogContent className={`sm:max-w-lg ${isMobile ? 'w-[95vw] max-w-[95vw] p-4' : ''}`}>
-          <DialogHeader>
+        <DialogContent className={`sm:max-w-lg ${isMobile ? 'w-[95vw] max-h-[90vh] max-w-[95vw]' : 'max-h-[90vh]'} p-6 rounded-lg overflow-y-auto`}>
+          <DialogHeader className="relative">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="absolute right-0 top-0" 
+              onClick={closeDetails}
+            >
+              <XIcon className="h-4 w-4" />
+              <span className="sr-only">Закрыть</span>
+            </Button>
             <DialogTitle>Детали бронирования</DialogTitle>
             <DialogDescription>
               Подробная информация о выбранном бронировании
@@ -264,7 +281,7 @@ const BookingTable = () => {
               </div>
               
               {isAdmin && (
-                <div className="flex flex-wrap justify-end gap-4 mt-4">
+                <DialogFooter className="flex flex-wrap justify-end gap-4 mt-4">
                   <Button variant="outline" onClick={() => {
                     closeDetails();
                     handleEdit(selectedBooking);
@@ -279,7 +296,7 @@ const BookingTable = () => {
                     <Trash2Icon className="mr-2 h-4 w-4" />
                     Удалить
                   </Button>
-                </div>
+                </DialogFooter>
               )}
             </div>
           )}
