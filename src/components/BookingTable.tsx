@@ -11,10 +11,14 @@ import {
   DialogHeader, 
   DialogTitle 
 } from '@/components/ui/dialog';
-import { EditIcon, FilterIcon, InfoIcon, SearchIcon, Trash2Icon } from 'lucide-react';
-import { format, parseISO } from 'date-fns';
+import { EditIcon, SearchIcon, Trash2Icon } from 'lucide-react';
+import { format, parseISO, addHours } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { Booking } from '@/lib/types';
+import { useIsMobile } from '@/hooks/use-mobile';
+
+// Часовой пояс Алматы GMT+5
+const TIMEZONE_OFFSET = 5;
 
 const BookingTable = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -27,6 +31,7 @@ const BookingTable = () => {
   const selectedZoneType = useStore((state) => state.selectedZoneType);
   const currentUser = useStore((state) => state.currentUser);
   const isAdmin = currentUser?.role === 'admin';
+  const isMobile = useIsMobile();
   
   // Get sorted bookings
   const bookings = getSortedBookings();
@@ -49,7 +54,8 @@ const BookingTable = () => {
 
   const formatDate = (dateTime: string) => {
     const date = parseISO(dateTime);
-    return format(date, 'dd.MM.yyyy HH:mm', { locale: ru });
+    const dateWithTZ = addHours(date, TIMEZONE_OFFSET);
+    return format(dateWithTZ, 'dd.MM.yyyy HH:mm', { locale: ru });
   };
 
   const formatMoney = (amount: number) => {
@@ -80,19 +86,19 @@ const BookingTable = () => {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center space-x-2">
-        <div className="relative flex-1">
+      <div className="flex flex-col sm:flex-row items-center gap-2">
+        <div className="relative flex-1 w-full">
           <SearchIcon className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Поиск по имени клиента или номеру телефона..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-8"
+            className="pl-8 w-full"
           />
         </div>
       </div>
 
-      <div className="rounded-md border glass-card">
+      <div className="rounded-md border glass-card overflow-hidden">
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
@@ -153,7 +159,7 @@ const BookingTable = () => {
 
       {/* Booking Details Dialog */}
       <Dialog open={selectedBooking !== null} onOpenChange={closeDetails}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className={`sm:max-w-lg ${isMobile ? 'w-[90vw] p-4' : ''}`}>
           <DialogHeader>
             <DialogTitle>Детали бронирования</DialogTitle>
             <DialogDescription>
@@ -163,7 +169,7 @@ const BookingTable = () => {
           
           {selectedBooking && (
             <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <h3 className="font-medium text-muted-foreground">Зона</h3>
                   <p className="text-lg">{getZoneById(selectedBooking.zoneId)?.name}</p>
@@ -174,7 +180,7 @@ const BookingTable = () => {
                 </div>
               </div>
               
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <h3 className="font-medium text-muted-foreground">Клиент</h3>
                   <p className="text-lg">{selectedBooking.clientName}</p>
@@ -185,7 +191,7 @@ const BookingTable = () => {
                 </div>
               </div>
               
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <h3 className="font-medium text-muted-foreground">Дата и время</h3>
                   <p className="text-lg">{formatDate(selectedBooking.dateTime)}</p>
@@ -196,7 +202,7 @@ const BookingTable = () => {
                 </div>
               </div>
               
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <h3 className="font-medium text-muted-foreground">Стоимость</h3>
                   <p className="text-lg">{formatMoney(selectedBooking.rentalCost)}</p>
@@ -214,7 +220,7 @@ const BookingTable = () => {
                 </div>
               )}
               
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <h3 className="font-medium text-muted-foreground">Создано</h3>
                   <p className="text-sm">{formatDate(selectedBooking.createdAt)}</p>
@@ -226,7 +232,7 @@ const BookingTable = () => {
               </div>
               
               {isAdmin && (
-                <div className="flex justify-end space-x-4 mt-4">
+                <div className="flex flex-wrap justify-end gap-4 mt-4">
                   <Button variant="outline" onClick={() => {
                     closeDetails();
                     handleEdit(selectedBooking);

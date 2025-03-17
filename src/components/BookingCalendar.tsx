@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useStore } from '@/lib/store';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar } from '@/components/ui/calendar';
@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { EditIcon, Trash2Icon } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 // Часовой пояс Алматы GMT+5
 const TIMEZONE_OFFSET = 5;
@@ -30,6 +31,14 @@ const BookingCalendar = () => {
   const currentUser = useStore((state) => state.currentUser);
   const isAdmin = currentUser?.role === 'admin';
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const isMobile = useIsMobile();
+
+  useEffect(() => {
+    // Set today as default date if none selected
+    if (!selectedDate || selectedDate === 'all') {
+      setSelectedDate(new Date().toISOString().split('T')[0]);
+    }
+  }, [selectedDate, setSelectedDate]);
 
   const getBookingsForDate = () => {
     return bookings.filter(
@@ -99,7 +108,7 @@ const BookingCalendar = () => {
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <Card className="glass-card">
         <CardHeader>
           <CardTitle className="flex items-center">
@@ -108,23 +117,25 @@ const BookingCalendar = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <Calendar
-            mode="single"
-            selected={selectedDate ? new Date(selectedDate) : undefined}
-            onSelect={handleDateSelect}
-            locale={ru}
-            className="rounded-md border p-3 pointer-events-auto"
-            modifiers={{
-              booked: getBookingDates(),
-            }}
-            modifiersStyles={{
-              booked: {
-                fontWeight: 'bold',
-                backgroundColor: 'hsl(var(--primary) / 0.2)',
-                color: 'hsl(var(--primary))',
-              },
-            }}
-          />
+          <div className="flex justify-center">
+            <Calendar
+              mode="single"
+              selected={selectedDate ? new Date(selectedDate) : undefined}
+              onSelect={handleDateSelect}
+              locale={ru}
+              className="rounded-md border p-3 pointer-events-auto"
+              modifiers={{
+                booked: getBookingDates(),
+              }}
+              modifiersStyles={{
+                booked: {
+                  fontWeight: 'bold',
+                  backgroundColor: 'hsl(var(--primary) / 0.2)',
+                  color: 'hsl(var(--primary))',
+                },
+              }}
+            />
+          </div>
           <div className="mt-4 text-sm text-muted-foreground">
             <div className="flex items-center">
               <div className="mr-2 h-3 w-3 rounded-full bg-primary/20"></div>
@@ -194,7 +205,7 @@ const BookingCalendar = () => {
 
       {/* Booking Details Dialog */}
       <Dialog open={selectedBooking !== null} onOpenChange={closeDetails}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className={`sm:max-w-lg ${isMobile ? 'w-[90vw] p-4' : ''}`}>
           <DialogHeader>
             <DialogTitle>Детали бронирования</DialogTitle>
             <DialogDescription>
@@ -204,7 +215,7 @@ const BookingCalendar = () => {
           
           {selectedBooking && (
             <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <h3 className="font-medium text-muted-foreground">Зона</h3>
                   <p className="text-lg">{getZoneById(selectedBooking.zoneId)?.name}</p>
@@ -215,7 +226,7 @@ const BookingCalendar = () => {
                 </div>
               </div>
               
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <h3 className="font-medium text-muted-foreground">Клиент</h3>
                   <p className="text-lg">{selectedBooking.clientName}</p>
@@ -226,7 +237,7 @@ const BookingCalendar = () => {
                 </div>
               </div>
               
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <h3 className="font-medium text-muted-foreground">Дата и время</h3>
                   <p className="text-lg">{formatDate(selectedBooking.dateTime)}</p>
@@ -237,7 +248,7 @@ const BookingCalendar = () => {
                 </div>
               </div>
               
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <h3 className="font-medium text-muted-foreground">Стоимость</h3>
                   <p className="text-lg">{formatMoney(selectedBooking.rentalCost)}</p>
@@ -255,7 +266,7 @@ const BookingCalendar = () => {
                 </div>
               )}
               
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <h3 className="font-medium text-muted-foreground">Создано</h3>
                   <p className="text-sm">{formatDate(selectedBooking.createdAt)}</p>
@@ -267,7 +278,7 @@ const BookingCalendar = () => {
               </div>
               
               {isAdmin && (
-                <div className="flex justify-end space-x-4 mt-4">
+                <div className="flex flex-wrap justify-end gap-4 mt-4">
                   <Button variant="outline" onClick={() => handleEdit(selectedBooking)}>
                     <EditIcon className="mr-2 h-4 w-4" />
                     Редактировать

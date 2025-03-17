@@ -13,10 +13,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import ThemeToggle from './ThemeToggle';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const Header = () => {
   const { currentUser, logout } = useStore();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   const handleLogout = () => {
     logout();
@@ -24,15 +26,18 @@ const Header = () => {
   };
 
   return (
-    <header className="border-b bg-card">
+    <header className="border-b bg-card sticky top-0 z-50">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <img 
             src="/lovable-uploads/e1dd7c30-e3ad-40c1-b017-be5927100c96.png" 
             alt="Тауасу Демалыс Мекени" 
-            className="h-12 mr-2"
+            className="h-10 md:h-12 mr-2"
           />
-          <span className="font-bold text-xl">Система бронирования</span>
+          <div className="flex flex-col">
+            <span className="font-bold text-base md:text-xl">Tau Asu</span>
+            <span className="text-xs md:text-sm text-muted-foreground">DEMALYS MEKENI</span>
+          </div>
         </div>
         
         <div className="flex items-center space-x-2">
@@ -43,7 +48,7 @@ const Header = () => {
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="flex items-center space-x-1">
                   <UserCircle className="h-5 w-5 mr-1" />
-                  <span>{currentUser.username}</span>
+                  {!isMobile && <span>{currentUser.username}</span>}
                   <ChevronDown className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
