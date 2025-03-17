@@ -11,7 +11,7 @@ import {
   DialogHeader, 
   DialogTitle 
 } from '@/components/ui/dialog';
-import { EditIcon, SearchIcon, Trash2Icon } from 'lucide-react';
+import { EditIcon, SearchIcon, Trash2Icon, PhoneIcon } from 'lucide-react';
 import { format, parseISO, addHours } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { Booking } from '@/lib/types';
@@ -84,6 +84,13 @@ const BookingTable = () => {
     setSelectedBooking(null);
   };
 
+  const openWhatsApp = (phoneNumber: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    // Remove any non-digit characters
+    const formattedNumber = phoneNumber.replace(/\D/g, '');
+    window.open(`https://wa.me/${formattedNumber}`, '_blank');
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row items-center gap-2">
@@ -125,7 +132,19 @@ const BookingTable = () => {
                     >
                       <TableCell className="font-medium">{zone?.name}</TableCell>
                       <TableCell>{booking.clientName}</TableCell>
-                      <TableCell className="hidden md:table-cell">{booking.phoneNumber}</TableCell>
+                      <TableCell className="hidden md:table-cell">
+                        <div className="flex items-center gap-2">
+                          {booking.phoneNumber}
+                          <Button 
+                            variant="outline" 
+                            size="icon" 
+                            className="h-7 w-7 ml-1"
+                            onClick={(e) => openWhatsApp(booking.phoneNumber, e)}
+                          >
+                            <PhoneIcon className="h-4 w-4 text-green-500" />
+                          </Button>
+                        </div>
+                      </TableCell>
                       <TableCell className="hidden md:table-cell">{booking.personCount}</TableCell>
                       <TableCell>{formatDate(booking.dateTime)}</TableCell>
                       <TableCell className="hidden md:table-cell">{formatMoney(booking.rentalCost)}</TableCell>
@@ -159,7 +178,7 @@ const BookingTable = () => {
 
       {/* Booking Details Dialog */}
       <Dialog open={selectedBooking !== null} onOpenChange={closeDetails}>
-        <DialogContent className={`sm:max-w-lg ${isMobile ? 'w-[90vw] p-4' : ''}`}>
+        <DialogContent className={`sm:max-w-lg ${isMobile ? 'w-[95vw] max-w-[95vw] p-4' : ''}`}>
           <DialogHeader>
             <DialogTitle>Детали бронирования</DialogTitle>
             <DialogDescription>
@@ -187,7 +206,20 @@ const BookingTable = () => {
                 </div>
                 <div>
                   <h3 className="font-medium text-muted-foreground">Телефон</h3>
-                  <p className="text-lg">{selectedBooking.phoneNumber}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-lg">{selectedBooking.phoneNumber}</p>
+                    <Button 
+                      variant="outline" 
+                      size="icon" 
+                      className="h-7 w-7"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openWhatsApp(selectedBooking.phoneNumber, e);
+                      }}
+                    >
+                      <PhoneIcon className="h-4 w-4 text-green-500" />
+                    </Button>
+                  </div>
                 </div>
               </div>
               

@@ -4,7 +4,7 @@ import { useStore } from '@/lib/store';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar } from '@/components/ui/calendar';
 import { ru } from 'date-fns/locale';
-import { CalendarIcon } from 'lucide-react';
+import { CalendarIcon, PhoneIcon } from 'lucide-react';
 import { format, isToday, parseISO, addHours } from 'date-fns';
 import { Booking } from '@/lib/types';
 import { 
@@ -41,6 +41,8 @@ const BookingCalendar = () => {
   }, [selectedDate, setSelectedDate]);
 
   const getBookingsForDate = () => {
+    if (!selectedDate || selectedDate === 'all') return [];
+    
     return bookings.filter(
       (booking) => booking.dateTime.split('T')[0] === selectedDate
     );
@@ -48,7 +50,9 @@ const BookingCalendar = () => {
 
   const handleDateSelect = (date: Date | undefined) => {
     if (date) {
-      setSelectedDate(date.toISOString().split('T')[0]);
+      // Format date properly to YYYY-MM-DD to fix date selection issue
+      const formattedDate = format(date, 'yyyy-MM-dd');
+      setSelectedDate(formattedDate);
     }
   };
 
@@ -107,6 +111,12 @@ const BookingCalendar = () => {
     }
   };
 
+  const openWhatsApp = (phoneNumber: string) => {
+    // Remove any non-digit characters
+    const formattedNumber = phoneNumber.replace(/\D/g, '');
+    window.open(`https://wa.me/${formattedNumber}`, '_blank');
+  };
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <Card className="glass-card">
@@ -123,7 +133,7 @@ const BookingCalendar = () => {
               selected={selectedDate ? new Date(selectedDate) : undefined}
               onSelect={handleDateSelect}
               locale={ru}
-              className="rounded-md border p-3 pointer-events-auto"
+              className="rounded-md border p-3 pointer-events-auto max-w-full"
               modifiers={{
                 booked: getBookingDates(),
               }}
@@ -205,7 +215,7 @@ const BookingCalendar = () => {
 
       {/* Booking Details Dialog */}
       <Dialog open={selectedBooking !== null} onOpenChange={closeDetails}>
-        <DialogContent className={`sm:max-w-lg ${isMobile ? 'w-[90vw] p-4' : ''}`}>
+        <DialogContent className={`sm:max-w-lg ${isMobile ? 'w-[95vw] max-w-[95vw] p-4' : ''}`}>
           <DialogHeader>
             <DialogTitle>Детали бронирования</DialogTitle>
             <DialogDescription>
@@ -233,7 +243,20 @@ const BookingCalendar = () => {
                 </div>
                 <div>
                   <h3 className="font-medium text-muted-foreground">Телефон</h3>
-                  <p className="text-lg">{selectedBooking.phoneNumber}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-lg">{selectedBooking.phoneNumber}</p>
+                    <Button 
+                      variant="outline" 
+                      size="icon" 
+                      className="h-7 w-7"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openWhatsApp(selectedBooking.phoneNumber);
+                      }}
+                    >
+                      <PhoneIcon className="h-4 w-4 text-green-500" />
+                    </Button>
+                  </div>
                 </div>
               </div>
               

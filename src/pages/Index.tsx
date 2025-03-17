@@ -67,22 +67,22 @@ const Index = () => {
         <ZoneFilter />
         
         <Tabs defaultValue="table" className="space-y-6">
-          <TabsList className="grid grid-cols-2 md:grid-cols-4 mb-4">
+          <TabsList className="w-full grid grid-cols-2 md:grid-cols-4 mb-4">
             <TabsTrigger value="table" className="flex items-center">
               <TableIcon className="mr-2 h-4 w-4" />
-              Таблица
+              <span className="whitespace-nowrap">Таблица</span>
             </TabsTrigger>
             <TabsTrigger value="calendar" className="flex items-center">
               <CalendarDaysIcon className="mr-2 h-4 w-4" />
-              Календарь
+              <span className="whitespace-nowrap">Календарь</span>
             </TabsTrigger>
             <TabsTrigger value="customers" className="flex items-center">
               <UsersIcon className="mr-2 h-4 w-4" />
-              Клиенты
+              <span className="whitespace-nowrap">Клиенты</span>
             </TabsTrigger>
             <TabsTrigger value="analytics" className="flex items-center">
               <BarChartIcon className="mr-2 h-4 w-4" />
-              Аналитика
+              <span className="whitespace-nowrap">Аналитика</span>
             </TabsTrigger>
           </TabsList>
           

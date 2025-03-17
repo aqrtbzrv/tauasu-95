@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Label } from '@/components/ui/label';
 import { format, parseISO } from 'date-fns';
 import { ru } from 'date-fns/locale';
-import { Search, Download, Users, Edit } from 'lucide-react';
+import { Search, Download, Users, Edit, PhoneIcon } from 'lucide-react';
 import { Customer } from '@/lib/types';
 
 const CustomersDatabase = () => {
@@ -55,6 +55,13 @@ const CustomersDatabase = () => {
     exportCustomersToExcel();
   };
 
+  const openWhatsApp = (phoneNumber: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    // Remove any non-digit characters
+    const formattedNumber = phoneNumber.replace(/\D/g, '');
+    window.open(`https://wa.me/${formattedNumber}`, '_blank');
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6">
@@ -94,7 +101,7 @@ const CustomersDatabase = () => {
                   <th className="py-3 px-4 text-left font-medium">Бронирований</th>
                   <th className="py-3 px-4 text-left font-medium">Последнее посещение</th>
                   <th className="py-3 px-4 text-left font-medium">Примечания</th>
-                  <th className="py-3 px-4 text-right font-medium sr-only">Действия</th>
+                  <th className="py-3 px-4 text-left font-medium">WhatsApp</th>
                 </tr>
               </thead>
               <tbody>
@@ -116,10 +123,15 @@ const CustomersDatabase = () => {
                           {customer.notes || '—'}
                         </div>
                       </td>
-                      <td className="py-3 px-4 text-right">
-                        <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
-                          <Edit className="h-4 w-4" />
-                          <span className="sr-only">Редактировать</span>
+                      <td className="py-3 px-4" onClick={(e) => e.stopPropagation()}>
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="h-8 w-8 p-0"
+                          onClick={(e) => openWhatsApp(customer.phoneNumber, e)}
+                        >
+                          <PhoneIcon className="h-4 w-4 text-green-500" />
+                          <span className="sr-only">WhatsApp</span>
                         </Button>
                       </td>
                     </tr>
@@ -153,7 +165,20 @@ const CustomersDatabase = () => {
                 </div>
                 <div>
                   <Label>Номер телефона</Label>
-                  <div className="font-medium mt-1">{selectedCustomer.phoneNumber}</div>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="font-medium">{selectedCustomer.phoneNumber}</span>
+                    <Button 
+                      variant="outline" 
+                      size="icon" 
+                      className="h-7 w-7"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openWhatsApp(selectedCustomer.phoneNumber, e);
+                      }}
+                    >
+                      <PhoneIcon className="h-4 w-4 text-green-500" />
+                    </Button>
+                  </div>
                 </div>
               </div>
               
