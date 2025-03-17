@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { AppState, Booking, Customer, User, Zone, ZoneType } from './types';
@@ -127,14 +126,14 @@ export const useStore = create<AppState>()(
               updatedAt: booking.updated_at
             }));
             
-            // Сортировка бронирований по дате (от ближайших к дальним)
+            // Sort bookings by date (from nearest to furthest)
             const sortedBookings = formattedBookings.sort((a, b) => {
               return new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime();
             });
             
             set({ bookings: sortedBookings });
             
-            // Получим данные о примечаниях клиентов из localStorage
+            // Get customer notes from localStorage
             const storedCustomerNotes = localStorage.getItem('customerNotes');
             const customerNotes = storedCustomerNotes ? JSON.parse(storedCustomerNotes) : {};
             
@@ -260,7 +259,7 @@ export const useStore = create<AppState>()(
               
               customersMap.set(newBooking.phoneNumber, customer);
               
-              // Сортировка бронирований по дате (от ближайших к дальним)
+              // Sort bookings by date (from nearest to furthest)
               const sortedBookings = [...state.bookings, newBooking].sort((a, b) => {
                 return new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime();
               });
@@ -318,7 +317,7 @@ export const useStore = create<AppState>()(
                 : booking
             );
             
-            // Пересортировка бронирований
+            // Sort bookings by date (from nearest to furthest)
             const sortedBookings = [...updatedBookings].sort((a, b) => {
               return new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime();
             });
@@ -464,13 +463,12 @@ export const useStore = create<AppState>()(
               : customer
           );
           
-          // Сохраним примечания в localStorage для постоянного хранения
-          const customerNotes = {};
-          updatedCustomers.forEach(customer => {
-            if (customer.notes) {
-              customerNotes[customer.phoneNumber] = customer.notes;
-            }
-          });
+          // Save notes to localStorage for persistent storage
+          const storedCustomerNotes = localStorage.getItem('customerNotes');
+          const customerNotes = storedCustomerNotes ? JSON.parse(storedCustomerNotes) : {};
+          
+          // Update the notes
+          customerNotes[phoneNumber] = notes;
           
           localStorage.setItem('customerNotes', JSON.stringify(customerNotes));
           

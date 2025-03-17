@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Label } from '@/components/ui/label';
 import { format, parseISO } from 'date-fns';
 import { ru } from 'date-fns/locale';
-import { Search, Download, Users, Edit, PhoneIcon } from 'lucide-react';
+import { Search, Download, Users, PhoneIcon } from 'lucide-react';
 import { Customer } from '@/lib/types';
 
 const CustomersDatabase = () => {
@@ -64,9 +64,9 @@ const CustomersDatabase = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4">
         <div className="relative w-full sm:max-w-md">
-          <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Поиск по имени или номеру телефона..."
             value={searchTerm}
@@ -84,9 +84,9 @@ const CustomersDatabase = () => {
         </Button>
       </div>
 
-      <Card className="overflow-hidden">
-        <CardHeader className="bg-muted/50">
-          <CardTitle className="flex items-center gap-2">
+      <Card className="overflow-hidden border rounded-lg shadow-sm">
+        <CardHeader className="bg-muted/50 py-4">
+          <CardTitle className="flex items-center gap-2 text-lg">
             <Users className="h-5 w-5" />
             <span>База клиентов ({filteredCustomers.length})</span>
           </CardTitle>
@@ -98,9 +98,9 @@ const CustomersDatabase = () => {
                 <tr className="border-b bg-muted/30">
                   <th className="py-3 px-4 text-left font-medium">Имя клиента</th>
                   <th className="py-3 px-4 text-left font-medium">Номер телефона</th>
-                  <th className="py-3 px-4 text-left font-medium">Бронирований</th>
-                  <th className="py-3 px-4 text-left font-medium">Последнее посещение</th>
-                  <th className="py-3 px-4 text-left font-medium">Примечания</th>
+                  <th className="py-3 px-4 text-left font-medium hidden sm:table-cell">Бронирований</th>
+                  <th className="py-3 px-4 text-left font-medium hidden md:table-cell">Последнее посещение</th>
+                  <th className="py-3 px-4 text-left font-medium hidden lg:table-cell">Примечания</th>
                   <th className="py-3 px-4 text-left font-medium">WhatsApp</th>
                 </tr>
               </thead>
@@ -114,11 +114,11 @@ const CustomersDatabase = () => {
                     >
                       <td className="py-3 px-4">{customer.name}</td>
                       <td className="py-3 px-4">{customer.phoneNumber}</td>
-                      <td className="py-3 px-4">{customer.bookingsCount}</td>
-                      <td className="py-3 px-4">
+                      <td className="py-3 px-4 hidden sm:table-cell">{customer.bookingsCount}</td>
+                      <td className="py-3 px-4 hidden md:table-cell">
                         {format(new Date(customer.lastBooking), 'dd MMMM yyyy', { locale: ru })}
                       </td>
-                      <td className="py-3 px-4">
+                      <td className="py-3 px-4 hidden lg:table-cell">
                         <div className="max-w-xs truncate">
                           {customer.notes || '—'}
                         </div>
@@ -127,7 +127,7 @@ const CustomersDatabase = () => {
                         <Button 
                           size="sm" 
                           variant="outline" 
-                          className="h-8 w-8 p-0"
+                          className="h-8 w-8 p-0 rounded-full"
                           onClick={(e) => openWhatsApp(customer.phoneNumber, e)}
                         >
                           <PhoneIcon className="h-4 w-4 text-green-500" />
@@ -158,7 +158,7 @@ const CustomersDatabase = () => {
           </DialogHeader>
           {selectedCustomer && (
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <Label>Имя клиента</Label>
                   <div className="font-medium mt-1">{selectedCustomer.name}</div>
@@ -170,7 +170,7 @@ const CustomersDatabase = () => {
                     <Button 
                       variant="outline" 
                       size="icon" 
-                      className="h-7 w-7"
+                      className="h-7 w-7 rounded-full"
                       onClick={(e) => {
                         e.stopPropagation();
                         openWhatsApp(selectedCustomer.phoneNumber, e);
@@ -182,7 +182,7 @@ const CustomersDatabase = () => {
                 </div>
               </div>
               
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <Label>Количество бронирований</Label>
                   <div className="font-medium mt-1">{selectedCustomer.bookingsCount}</div>

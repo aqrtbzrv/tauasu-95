@@ -53,7 +53,7 @@ const Index = () => {
     <div className="min-h-screen flex flex-col">
       <Header />
       
-      <main className="flex-1 container mx-auto px-4 py-8">
+      <main className="flex-1 container mx-auto px-4 py-6">
         <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <h1 className="text-2xl font-bold">Управление бронированиями</h1>
           {isAdmin && (
@@ -66,42 +66,48 @@ const Index = () => {
         
         <ZoneFilter />
         
-        <Tabs defaultValue="table" className="space-y-6">
-          <TabsList className="w-full grid grid-cols-2 md:grid-cols-4 mb-4">
-            <TabsTrigger value="table" className="flex items-center">
-              <TableIcon className="mr-2 h-4 w-4" />
-              <span className="whitespace-nowrap">Таблица</span>
-            </TabsTrigger>
-            <TabsTrigger value="calendar" className="flex items-center">
-              <CalendarDaysIcon className="mr-2 h-4 w-4" />
-              <span className="whitespace-nowrap">Календарь</span>
-            </TabsTrigger>
-            <TabsTrigger value="customers" className="flex items-center">
-              <UsersIcon className="mr-2 h-4 w-4" />
-              <span className="whitespace-nowrap">Клиенты</span>
-            </TabsTrigger>
-            <TabsTrigger value="analytics" className="flex items-center">
-              <BarChartIcon className="mr-2 h-4 w-4" />
-              <span className="whitespace-nowrap">Аналитика</span>
-            </TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="table" className="animate-in fade-in-50">
-            <BookingTable />
-          </TabsContent>
-          
-          <TabsContent value="calendar" className="animate-in fade-in-50">
-            <BookingCalendar />
-          </TabsContent>
-          
-          <TabsContent value="customers" className="animate-in fade-in-50">
-            <CustomersDatabase />
-          </TabsContent>
-          
-          <TabsContent value="analytics" className="animate-in fade-in-50">
-            <AnalyticsView />
-          </TabsContent>
-        </Tabs>
+        <div className="mt-6 rounded-lg bg-card shadow-sm border">
+          <Tabs defaultValue="table" className="w-full">
+            <div className="p-1 bg-muted/30 rounded-t-lg border-b">
+              <TabsList className="w-full grid grid-cols-2 md:grid-cols-4 gap-1 p-1 h-auto bg-transparent">
+                <TabsTrigger value="table" className="flex items-center py-2.5 rounded-md data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800">
+                  <TableIcon className="mr-2 h-4 w-4" />
+                  <span className="whitespace-nowrap">Таблица</span>
+                </TabsTrigger>
+                <TabsTrigger value="calendar" className="flex items-center py-2.5 rounded-md data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800">
+                  <CalendarDaysIcon className="mr-2 h-4 w-4" />
+                  <span className="whitespace-nowrap">Календарь</span>
+                </TabsTrigger>
+                <TabsTrigger value="customers" className="flex items-center py-2.5 rounded-md data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800">
+                  <UsersIcon className="mr-2 h-4 w-4" />
+                  <span className="whitespace-nowrap">Клиенты</span>
+                </TabsTrigger>
+                <TabsTrigger value="analytics" className="flex items-center py-2.5 rounded-md data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800">
+                  <BarChartIcon className="mr-2 h-4 w-4" />
+                  <span className="whitespace-nowrap">Аналитика</span>
+                </TabsTrigger>
+              </TabsList>
+            </div>
+            
+            <div className="p-4">
+              <TabsContent value="table" className="animate-in fade-in-50 m-0">
+                <BookingTable />
+              </TabsContent>
+              
+              <TabsContent value="calendar" className="animate-in fade-in-50 m-0">
+                <BookingCalendar />
+              </TabsContent>
+              
+              <TabsContent value="customers" className="animate-in fade-in-50 m-0">
+                <CustomersDatabase />
+              </TabsContent>
+              
+              <TabsContent value="analytics" className="animate-in fade-in-50 m-0">
+                <AnalyticsView />
+              </TabsContent>
+            </div>
+          </Tabs>
+        </div>
         
         <BookingForm 
           isOpen={formOpen || isEditingBooking} 
