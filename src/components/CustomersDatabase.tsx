@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useStore } from '@/lib/store';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -57,9 +56,16 @@ const CustomersDatabase = () => {
 
   const openWhatsApp = (phoneNumber: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    // Remove any non-digit characters
     const formattedNumber = phoneNumber.replace(/\D/g, '');
     window.open(`https://wa.me/${formattedNumber}`, '_blank');
+  };
+
+  const formatDate = (dateString: string) => {
+    return format(new Date(dateString), 'dd MMMM yyyy', { locale: ru });
+  };
+
+  const formatDateTime = (dateString: string) => {
+    return format(new Date(dateString), 'dd.MM.yyyy HH:mm', { locale: ru });
   };
 
   return (
@@ -116,7 +122,7 @@ const CustomersDatabase = () => {
                       <td className="py-3 px-4">{customer.phoneNumber}</td>
                       <td className="py-3 px-4 hidden sm:table-cell">{customer.bookingsCount}</td>
                       <td className="py-3 px-4 hidden md:table-cell">
-                        {format(new Date(customer.lastBooking), 'dd MMMM yyyy', { locale: ru })}
+                        {formatDateTime(customer.lastBooking)}
                       </td>
                       <td className="py-3 px-4 hidden lg:table-cell">
                         <div className="max-w-xs truncate">
@@ -199,7 +205,7 @@ const CustomersDatabase = () => {
                 <div>
                   <Label>Последнее бронирование</Label>
                   <div className="font-medium mt-1">
-                    {format(new Date(selectedCustomer.lastBooking), 'dd.MM.yyyy HH:mm', { locale: ru })}
+                    {formatDateTime(selectedCustomer.lastBooking)}
                   </div>
                 </div>
               </div>

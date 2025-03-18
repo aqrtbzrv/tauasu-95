@@ -18,7 +18,7 @@ import { Button } from '@/components/ui/button';
 import { EditIcon, Trash2Icon } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 
-// Часовой пояс Алматы GMT+6
+// Set timezone offset to 0
 const TIMEZONE_OFFSET = 0;
 
 const BookingCalendar = () => {
@@ -67,6 +67,11 @@ const BookingCalendar = () => {
     return bookings.filter((booking) => booking.dateTime.split('T')[0] === today).length;
   };
 
+  const formatDate = (dateTime: string) => {
+    const date = parseISO(dateTime);
+    return format(date, 'dd.MM.yyyy HH:mm', { locale: ru });
+  };
+
   const formatDateTime = (dateTime: string) => {
     const date = parseISO(dateTime);
     return format(date, 'HH:mm');
@@ -78,11 +83,6 @@ const BookingCalendar = () => {
       currency: 'KZT',
       minimumFractionDigits: 0,
     }).format(amount);
-  };
-
-  const formatDate = (dateTime: string) => {
-    const date = parseISO(dateTime);
-    return format(date, 'dd.MM.yyyy HH:mm', { locale: ru });
   };
 
   const handleBookingClick = (booking: Booking) => {

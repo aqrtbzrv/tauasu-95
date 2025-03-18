@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useStore } from '@/lib/store';
 import AuthForm from '@/components/AuthForm';
@@ -21,7 +22,7 @@ import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
 
-const TIMEZONE_OFFSET = 0; // Updated from 5 to 0 to fix time display issue
+const TIMEZONE_OFFSET = 0; // Set to 0 for consistent time across the application
 
 const Index = () => {
   const { currentUser, editBooking, currentBooking, isEditingBooking } = useStore();
@@ -62,7 +63,7 @@ const Index = () => {
     setFormOpen(false);
   };
 
-  // Format the current time in Almaty timezone (GMT+5)
+  // Format the current time with timezone offset 0
   const formattedTime = format(
     new Date(currentTime.getTime() + TIMEZONE_OFFSET * 60 * 60 * 1000),
     'dd MMM yyyy HH:mm',

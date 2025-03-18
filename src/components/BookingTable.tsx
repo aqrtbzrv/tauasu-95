@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
@@ -17,8 +18,8 @@ import { ru } from 'date-fns/locale';
 import { Booking } from '@/lib/types';
 import { useIsMobile } from '@/hooks/use-mobile';
 
-// Часовой пояс Алматы GMT+6
-const TIMEZONE_OFFSET = 6;
+// Set timezone offset to 0
+const TIMEZONE_OFFSET = 0;
 
 const BookingTable = () => {
   const [searchQuery, setSearchQuery] = useState('');

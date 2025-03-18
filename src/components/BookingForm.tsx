@@ -13,12 +13,14 @@ import { addHours, format } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { Users, Calendar, Home, Phone, DollarSign, Clock, UtensilsCrossed } from 'lucide-react';
 
-// Часовой пояс Алматы GMT+5
+// Set timezone offset to 0
 const TIMEZONE_OFFSET = 0;
+
 interface BookingFormProps {
   isOpen: boolean;
   onClose: () => void;
 }
+
 const BookingForm = ({
   isOpen,
   onClose
@@ -47,6 +49,7 @@ const BookingForm = ({
   });
   const [availableZones, setAvailableZones] = useState<Zone[]>([]);
   const [activeTab, setActiveTab] = useState('zone');
+
   useEffect(() => {
     if (isEditingBooking && currentBooking) {
       setFormData({
@@ -70,6 +73,7 @@ const BookingForm = ({
       setActiveTab('zone');
     }
   }, [isEditingBooking, currentBooking, selectedDate]);
+
   useEffect(() => {
     const date = formData.dateTime?.split('T')[0] || selectedDate;
     const filtered = zones.filter(zone => {
@@ -80,6 +84,7 @@ const BookingForm = ({
     });
     setAvailableZones(filtered);
   }, [formData.dateTime, selectedDate, zones, isZoneBooked, isEditingBooking, currentBooking]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const {
       name,
@@ -90,6 +95,7 @@ const BookingForm = ({
       [name]: value
     });
   };
+
   const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const {
       name,
@@ -100,12 +106,14 @@ const BookingForm = ({
       [name]: Number(value)
     });
   };
+
   const handleSelectChange = (name: string, value: string) => {
     setFormData({
       ...formData,
       [name]: value
     });
   };
+
   const moveToNextTab = () => {
     switch (activeTab) {
       case 'zone':
@@ -131,6 +139,7 @@ const BookingForm = ({
         break;
     }
   };
+
   const moveToPrevTab = () => {
     switch (activeTab) {
       case 'client':
@@ -141,6 +150,7 @@ const BookingForm = ({
         break;
     }
   };
+
   const handleSubmit = () => {
     if (!formData.zoneId) {
       toast.error('Выберите зону');
@@ -172,18 +182,18 @@ const BookingForm = ({
     }
     onClose();
   };
+
   const handleCancel = () => {
     editBooking(null);
     onClose();
   };
 
-  // Only admins can edit bookings, regular staff can view but not edit
   const isDisabled = !isAdmin;
 
-  // If user is not admin, they should not be able to add or edit bookings
   if (!isAdmin && !isEditingBooking) {
     return null;
   }
+
   return <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[600px] w-[calc(100%-2rem)] mx-auto max-h-[90vh] overflow-y-auto rounded-2xl">
         <DialogHeader>
@@ -340,4 +350,5 @@ const BookingForm = ({
       </DialogContent>
     </Dialog>;
 };
+
 export default BookingForm;
