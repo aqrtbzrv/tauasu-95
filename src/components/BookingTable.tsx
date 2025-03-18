@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
@@ -12,7 +13,7 @@ import {
   DialogFooter
 } from '@/components/ui/dialog';
 import { EditIcon, SearchIcon, Trash2Icon, PhoneIcon, XIcon } from 'lucide-react';
-import { format, parseISO, addHours, startOfMonth, endOfMonth } from 'date-fns';
+import { format, parseISO, addHours, startOfMonth, endOfMonth, startOfDay, isBefore } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { Booking } from '@/lib/types';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -38,10 +39,11 @@ const BookingTable = () => {
   
   // Get current month start and end
   const now = new Date();
+  const today = startOfDay(now);
   const monthStart = startOfMonth(now);
   const monthEnd = endOfMonth(now);
   
-  // Filter bookings by date (current month and future) and zone type if selected
+  // Filter bookings by date (current and future dates only) and zone type if selected
   const filteredBookings = bookings.filter((booking) => {
     const searchLower = searchQuery.toLowerCase();
     const bookingDate = new Date(booking.dateTime);
@@ -51,13 +53,16 @@ const BookingTable = () => {
                            booking.phoneNumber.includes(searchQuery) ||
                            (zone?.name.toLowerCase().includes(searchLower) || false);
     
+    // Filter out past bookings - only show current and future bookings
+    const isFutureOrToday = !isBefore(bookingDate, today);
+    
     // Include bookings from the current month and future
     const isCurrentMonthOrFuture = bookingDate >= monthStart;
     
     const matchesDate = selectedDate === 'all' || booking.dateTime.split('T')[0] === selectedDate;
     const matchesZoneType = selectedZoneType === 'all' || zone?.type === selectedZoneType;
     
-    return matchesSearch && (matchesDate || isCurrentMonthOrFuture) && matchesZoneType;
+    return matchesSearch && (matchesDate || (isCurrentMonthOrFuture && isFutureOrToday)) && matchesZoneType;
   });
 
   const formatDate = (dateTime: string) => {
