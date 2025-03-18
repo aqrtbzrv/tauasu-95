@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useStore } from '@/lib/store';
 import {
@@ -40,7 +39,7 @@ import {
 } from 'lucide-react';
 
 // Часовой пояс Алматы GMT+5
-const TIMEZONE_OFFSET = 5;
+const TIMEZONE_OFFSET = 0;
 
 interface BookingFormProps {
   isOpen: boolean;
@@ -219,7 +218,7 @@ const BookingForm = ({ isOpen, onClose }: BookingFormProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[600px] w-[calc(100%-2rem)] mx-auto max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">
             {isEditingBooking ? 'Детали бронирования' : 'Новое бронирование'}

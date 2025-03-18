@@ -19,7 +19,7 @@ import { EditIcon, Trash2Icon } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 // Часовой пояс Алматы GMT+6
-const TIMEZONE_OFFSET = 6;
+const TIMEZONE_OFFSET = 0;
 
 const BookingCalendar = () => {
   const selectedDate = useStore((state) => state.selectedDate);

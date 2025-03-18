@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useStore } from '@/lib/store';
 import AuthForm from '@/components/AuthForm';
@@ -22,7 +21,7 @@ import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
 
-const TIMEZONE_OFFSET = 5; // Almaty GMT+5
+const TIMEZONE_OFFSET = 0; // Updated from 5 to 0 to fix time display issue
 
 const Index = () => {
   const { currentUser, editBooking, currentBooking, isEditingBooking } = useStore();
@@ -150,7 +149,7 @@ const Index = () => {
 
       <footer className="w-full py-4 px-6 bg-muted/30 border-t mt-auto">
         <div className="container mx-auto text-center text-xs text-muted-foreground">
-          © {new Date().getFullYear()} Все права защищены. asqartbzrv
+          © {new Date().getFullYear()} Все права защищены. @asqartbzrv
         </div>
       </footer>
     </div>
