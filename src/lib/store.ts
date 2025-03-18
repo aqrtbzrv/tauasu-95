@@ -203,7 +203,7 @@ export const useStore = create<AppState>()(
         try {
           const now = new Date().toISOString();
           
-          // First insert into Supabase
+          // First insert into Supabase - don't modify the dateTime value
           const { data, error } = await supabase
             .from('bookings')
             .insert({
@@ -212,7 +212,7 @@ export const useStore = create<AppState>()(
               rental_price: booking.rentalCost,
               prepayment: booking.prepayment,
               number_of_people: booking.personCount,
-              date_time: booking.dateTime,
+              date_time: booking.dateTime, // Use the dateTime as-is without timezone adjustment
               menu: booking.menu,
               phone_number: booking.phoneNumber,
               service_type: get().getZoneById(booking.zoneId)?.type || 'Unknown'
@@ -613,3 +613,4 @@ declare global {
     supabaseSubscription: any;
   }
 }
+

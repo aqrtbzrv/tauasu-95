@@ -18,8 +18,8 @@ import { Button } from '@/components/ui/button';
 import { EditIcon, Trash2Icon } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 
-// Часовой пояс Алматы GMT+5
-const TIMEZONE_OFFSET = 5;
+// Часовой пояс Алматы GMT+6
+const TIMEZONE_OFFSET = 6;
 
 const BookingCalendar = () => {
   const selectedDate = useStore((state) => state.selectedDate);
@@ -34,7 +34,6 @@ const BookingCalendar = () => {
   const isMobile = useIsMobile();
 
   useEffect(() => {
-    // Set today as default date if none selected
     if (!selectedDate || selectedDate === 'all') {
       setSelectedDate(new Date().toISOString().split('T')[0]);
     }
@@ -50,7 +49,6 @@ const BookingCalendar = () => {
 
   const handleDateSelect = (date: Date | undefined) => {
     if (date) {
-      // Format date properly to YYYY-MM-DD to fix date selection issue
       const formattedDate = format(date, 'yyyy-MM-dd');
       setSelectedDate(formattedDate);
     }
@@ -70,10 +68,8 @@ const BookingCalendar = () => {
   };
 
   const formatDateTime = (dateTime: string) => {
-    // Применяем часовой пояс Алматы GMT+5
     const date = parseISO(dateTime);
-    const dateWithTZ = addHours(date, TIMEZONE_OFFSET);
-    return format(dateWithTZ, 'HH:mm');
+    return format(date, 'HH:mm');
   };
 
   const formatMoney = (amount: number) => {
@@ -85,10 +81,8 @@ const BookingCalendar = () => {
   };
 
   const formatDate = (dateTime: string) => {
-    // Применяем часовой пояс Алматы GMT+5
     const date = parseISO(dateTime);
-    const dateWithTZ = addHours(date, TIMEZONE_OFFSET);
-    return format(dateWithTZ, 'dd.MM.yyyy HH:mm', { locale: ru });
+    return format(date, 'dd.MM.yyyy HH:mm', { locale: ru });
   };
 
   const handleBookingClick = (booking: Booking) => {
@@ -112,7 +106,6 @@ const BookingCalendar = () => {
   };
 
   const openWhatsApp = (phoneNumber: string) => {
-    // Remove any non-digit characters
     const formattedNumber = phoneNumber.replace(/\D/g, '');
     window.open(`https://wa.me/${formattedNumber}`, '_blank');
   };
@@ -225,7 +218,6 @@ const BookingCalendar = () => {
         </CardContent>
       </Card>
 
-      {/* Booking Details Dialog - Updated to half-page style with exit button */}
       <Dialog open={selectedBooking !== null} onOpenChange={closeDetails}>
         <DialogContent className={`sm:max-w-lg ${isMobile ? 'w-[95vw] max-h-[90vh] max-w-[95vw]' : 'max-h-[90vh]'} p-6 rounded-lg overflow-y-auto`}>
           <DialogHeader className="relative">

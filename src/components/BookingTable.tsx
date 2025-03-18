@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
@@ -18,8 +17,8 @@ import { ru } from 'date-fns/locale';
 import { Booking } from '@/lib/types';
 import { useIsMobile } from '@/hooks/use-mobile';
 
-// Часовой пояс Алматы GMT+5
-const TIMEZONE_OFFSET = 5;
+// Часовой пояс Алматы GMT+6
+const TIMEZONE_OFFSET = 6;
 
 const BookingTable = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -67,8 +66,7 @@ const BookingTable = () => {
 
   const formatDate = (dateTime: string) => {
     const date = parseISO(dateTime);
-    const dateWithTZ = addHours(date, TIMEZONE_OFFSET);
-    return format(dateWithTZ, 'dd.MM.yyyy HH:mm', { locale: ru });
+    return format(date, 'dd.MM.yyyy HH:mm', { locale: ru });
   };
 
   const formatMoney = (amount: number) => {
@@ -99,7 +97,6 @@ const BookingTable = () => {
 
   const openWhatsApp = (phoneNumber: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    // Remove any non-digit characters
     const formattedNumber = phoneNumber.replace(/\D/g, '');
     window.open(`https://wa.me/${formattedNumber}`, '_blank');
   };
@@ -189,7 +186,6 @@ const BookingTable = () => {
         </div>
       </div>
 
-      {/* Booking Details Dialog - Updated to half-page style with exit button */}
       <Dialog open={selectedBooking !== null} onOpenChange={closeDetails}>
         <DialogContent className={`sm:max-w-lg ${isMobile ? 'w-[95vw] max-h-[90vh] max-w-[95vw]' : 'max-h-[90vh]'} p-6 rounded-lg overflow-y-auto`}>
           <DialogHeader className="relative">

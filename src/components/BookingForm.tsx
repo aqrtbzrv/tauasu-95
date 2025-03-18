@@ -38,7 +38,7 @@ import {
   UtensilsCrossed 
 } from 'lucide-react';
 
-const TIMEZONE_OFFSET = 5;
+const TIMEZONE_OFFSET = 6;
 
 interface BookingFormProps {
   isOpen: boolean;
@@ -189,7 +189,11 @@ const BookingForm = ({ isOpen, onClose }: BookingFormProps) => {
     if (isEditingBooking && currentBooking) {
       updateBooking(currentBooking.id, formData);
     } else {
-      addBooking(formData as Omit<Booking, 'id' | 'createdAt' | 'updatedAt'>);
+      const bookingData = {
+        ...formData,
+      } as Omit<Booking, 'id' | 'createdAt' | 'updatedAt'>;
+      
+      addBooking(bookingData);
     }
     
     onClose();
