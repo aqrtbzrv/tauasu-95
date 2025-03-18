@@ -1,52 +1,28 @@
 import React, { useEffect, useState } from 'react';
 import { useStore } from '@/lib/store';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Booking, Zone } from '@/lib/types';
 import { toast } from 'sonner';
 import { addHours, format } from 'date-fns';
 import { ru } from 'date-fns/locale';
-import { 
-  Users, 
-  Calendar, 
-  Home, 
-  Phone, 
-  DollarSign, 
-  Clock, 
-  UtensilsCrossed 
-} from 'lucide-react';
+import { Users, Calendar, Home, Phone, DollarSign, Clock, UtensilsCrossed } from 'lucide-react';
 
 // Часовой пояс Алматы GMT+5
 const TIMEZONE_OFFSET = 0;
-
 interface BookingFormProps {
   isOpen: boolean;
   onClose: () => void;
 }
-
-const BookingForm = ({ isOpen, onClose }: BookingFormProps) => {
+const BookingForm = ({
+  isOpen,
+  onClose
+}: BookingFormProps) => {
   const {
     zones,
     addBooking,
@@ -56,11 +32,9 @@ const BookingForm = ({ isOpen, onClose }: BookingFormProps) => {
     editBooking,
     selectedDate,
     isZoneBooked,
-    currentUser,
+    currentUser
   } = useStore();
-  
   const isAdmin = currentUser?.role === 'admin';
-  
   const [formData, setFormData] = useState<Partial<Booking>>({
     zoneId: '',
     clientName: '',
@@ -69,23 +43,20 @@ const BookingForm = ({ isOpen, onClose }: BookingFormProps) => {
     personCount: 1,
     dateTime: `${selectedDate}T12:00`,
     menu: '',
-    phoneNumber: '',
+    phoneNumber: ''
   });
-
   const [availableZones, setAvailableZones] = useState<Zone[]>([]);
   const [activeTab, setActiveTab] = useState('zone');
-
   useEffect(() => {
     if (isEditingBooking && currentBooking) {
       setFormData({
-        ...currentBooking,
+        ...currentBooking
       });
       setActiveTab('zone');
     } else {
       const now = new Date();
       const nowWithTimezone = addHours(now, TIMEZONE_OFFSET);
       const formattedDate = format(nowWithTimezone, "yyyy-MM-dd'T'HH:mm");
-
       setFormData({
         zoneId: '',
         clientName: '',
@@ -94,40 +65,47 @@ const BookingForm = ({ isOpen, onClose }: BookingFormProps) => {
         personCount: 1,
         dateTime: formattedDate,
         menu: '',
-        phoneNumber: '',
+        phoneNumber: ''
       });
       setActiveTab('zone');
     }
   }, [isEditingBooking, currentBooking, selectedDate]);
-
   useEffect(() => {
     const date = formData.dateTime?.split('T')[0] || selectedDate;
-    
-    const filtered = zones.filter((zone) => {
+    const filtered = zones.filter(zone => {
       if (isEditingBooking && currentBooking && currentBooking.zoneId === zone.id) {
         return true;
       }
-      
       return !isZoneBooked(zone.id, `${date}T00:00`);
     });
-    
     setAvailableZones(filtered);
   }, [formData.dateTime, selectedDate, zones, isZoneBooked, isEditingBooking, currentBooking]);
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    const {
+      name,
+      value
+    } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value
+    });
   };
-
   const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: Number(value) });
+    const {
+      name,
+      value
+    } = e.target;
+    setFormData({
+      ...formData,
+      [name]: Number(value)
+    });
   };
-
   const handleSelectChange = (name: string, value: string) => {
-    setFormData({ ...formData, [name]: value });
+    setFormData({
+      ...formData,
+      [name]: value
+    });
   };
-
   const moveToNextTab = () => {
     switch (activeTab) {
       case 'zone':
@@ -153,7 +131,6 @@ const BookingForm = ({ isOpen, onClose }: BookingFormProps) => {
         break;
     }
   };
-
   const moveToPrevTab = () => {
     switch (activeTab) {
       case 'client':
@@ -164,45 +141,37 @@ const BookingForm = ({ isOpen, onClose }: BookingFormProps) => {
         break;
     }
   };
-
   const handleSubmit = () => {
     if (!formData.zoneId) {
       toast.error('Выберите зону');
       setActiveTab('zone');
       return;
     }
-    
     if (!formData.clientName) {
       toast.error('Введите имя клиента');
       setActiveTab('client');
       return;
     }
-    
     if (!formData.phoneNumber) {
       toast.error('Введите номер телефона');
       setActiveTab('client');
       return;
     }
-    
     if (!formData.dateTime) {
       toast.error('Выберите дату и время');
       setActiveTab('details');
       return;
     }
-    
     if (isEditingBooking && currentBooking) {
       updateBooking(currentBooking.id, formData);
     } else {
       const bookingData = {
-        ...formData,
+        ...formData
       } as Omit<Booking, 'id' | 'createdAt' | 'updatedAt'>;
-      
       addBooking(bookingData);
     }
-    
     onClose();
   };
-
   const handleCancel = () => {
     editBooking(null);
     onClose();
@@ -215,10 +184,8 @@ const BookingForm = ({ isOpen, onClose }: BookingFormProps) => {
   if (!isAdmin && !isEditingBooking) {
     return null;
   }
-
-  return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px] w-[calc(100%-2rem)] mx-auto max-h-[90vh] overflow-y-auto">
+  return <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[600px] w-[calc(100%-2rem)] mx-auto max-h-[90vh] overflow-y-auto rounded-2xl">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">
             {isEditingBooking ? 'Детали бронирования' : 'Новое бронирование'}
@@ -249,31 +216,20 @@ const BookingForm = ({ isOpen, onClose }: BookingFormProps) => {
                   <span>Выберите зону</span>
                 </Label>
                 
-                <Select
-                  value={formData.zoneId}
-                  onValueChange={(value) => handleSelectChange('zoneId', value)}
-                  disabled={isDisabled}
-                >
+                <Select value={formData.zoneId} onValueChange={value => handleSelectChange('zoneId', value)} disabled={isDisabled}>
                   <SelectTrigger className="h-12">
                     <SelectValue placeholder="Выберите зону" />
                   </SelectTrigger>
                   <SelectContent>
-                    {availableZones.length > 0 ? (
-                      availableZones.map((zone) => (
-                        <SelectItem key={zone.id} value={zone.id}>
+                    {availableZones.length > 0 ? availableZones.map(zone => <SelectItem key={zone.id} value={zone.id}>
                           {zone.name} ({zone.type})
-                        </SelectItem>
-                      ))
-                    ) : (
-                      <div className="p-2 text-center text-muted-foreground">
+                        </SelectItem>) : <div className="p-2 text-center text-muted-foreground">
                         Нет доступных зон на выбранную дату
-                      </div>
-                    )}
+                      </div>}
                   </SelectContent>
                 </Select>
                 
-                {formData.zoneId && (
-                  <div className="mt-4 p-4 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-900">
+                {formData.zoneId && <div className="mt-4 p-4 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-900">
                     <h3 className="font-medium mb-2 text-green-800 dark:text-green-300">
                       Выбранная зона:
                     </h3>
@@ -281,19 +237,16 @@ const BookingForm = ({ isOpen, onClose }: BookingFormProps) => {
                       <strong>{zones.find(z => z.id === formData.zoneId)?.name}</strong> 
                       {' '}({zones.find(z => z.id === formData.zoneId)?.type})
                     </p>
-                  </div>
-                )}
+                  </div>}
               </div>
               
               <div className="flex justify-end gap-2 pt-4">
                 <Button type="button" variant="outline" onClick={handleCancel}>
                   Отмена
                 </Button>
-                {!isDisabled && (
-                  <Button onClick={moveToNextTab}>
+                {!isDisabled && <Button onClick={moveToNextTab}>
                     Далее
-                  </Button>
-                )}
+                  </Button>}
               </div>
             </div>
           </TabsContent>
@@ -305,16 +258,7 @@ const BookingForm = ({ isOpen, onClose }: BookingFormProps) => {
                   <Users className="h-4 w-4 text-green-600" />
                   <span>Имя клиента</span>
                 </Label>
-                <Input
-                  id="clientName"
-                  name="clientName"
-                  value={formData.clientName}
-                  onChange={handleChange}
-                  placeholder="Введите имя клиента"
-                  className="h-12"
-                  required
-                  disabled={isDisabled}
-                />
+                <Input id="clientName" name="clientName" value={formData.clientName} onChange={handleChange} placeholder="Введите имя клиента" className="h-12" required disabled={isDisabled} />
               </div>
               
               <div className="space-y-2">
@@ -322,27 +266,16 @@ const BookingForm = ({ isOpen, onClose }: BookingFormProps) => {
                   <Phone className="h-4 w-4 text-green-600" />
                   <span>Номер телефона</span>
                 </Label>
-                <Input
-                  id="phoneNumber"
-                  name="phoneNumber"
-                  value={formData.phoneNumber}
-                  onChange={handleChange}
-                  placeholder="+7 (XXX) XXX-XX-XX"
-                  className="h-12"
-                  required
-                  disabled={isDisabled}
-                />
+                <Input id="phoneNumber" name="phoneNumber" value={formData.phoneNumber} onChange={handleChange} placeholder="+7 (XXX) XXX-XX-XX" className="h-12" required disabled={isDisabled} />
               </div>
               
               <div className="flex justify-between gap-2 pt-4">
                 <Button type="button" variant="outline" onClick={moveToPrevTab}>
                   Назад
                 </Button>
-                {!isDisabled && (
-                  <Button onClick={moveToNextTab}>
+                {!isDisabled && <Button onClick={moveToNextTab}>
                     Далее
-                  </Button>
-                )}
+                  </Button>}
               </div>
             </div>
           </TabsContent>
@@ -355,17 +288,7 @@ const BookingForm = ({ isOpen, onClose }: BookingFormProps) => {
                     <DollarSign className="h-4 w-4 text-green-600" />
                     <span>Стоимость аренды</span>
                   </Label>
-                  <Input
-                    id="rentalCost"
-                    name="rentalCost"
-                    type="number"
-                    value={formData.rentalCost}
-                    onChange={handleNumberChange}
-                    min={0}
-                    className="h-12"
-                    required
-                    disabled={isDisabled}
-                  />
+                  <Input id="rentalCost" name="rentalCost" type="number" value={formData.rentalCost} onChange={handleNumberChange} min={0} className="h-12" required disabled={isDisabled} />
                 </div>
                 
                 <div className="space-y-2">
@@ -373,17 +296,7 @@ const BookingForm = ({ isOpen, onClose }: BookingFormProps) => {
                     <DollarSign className="h-4 w-4 text-green-600" />
                     <span>Предоплата</span>
                   </Label>
-                  <Input
-                    id="prepayment"
-                    name="prepayment"
-                    type="number"
-                    value={formData.prepayment}
-                    onChange={handleNumberChange}
-                    min={0}
-                    className="h-12"
-                    required
-                    disabled={isDisabled}
-                  />
+                  <Input id="prepayment" name="prepayment" type="number" value={formData.prepayment} onChange={handleNumberChange} min={0} className="h-12" required disabled={isDisabled} />
                 </div>
               </div>
               
@@ -393,17 +306,7 @@ const BookingForm = ({ isOpen, onClose }: BookingFormProps) => {
                     <Users className="h-4 w-4 text-green-600" />
                     <span>Количество гостей</span>
                   </Label>
-                  <Input
-                    id="personCount"
-                    name="personCount"
-                    type="number"
-                    value={formData.personCount}
-                    onChange={handleNumberChange}
-                    min={1}
-                    className="h-12"
-                    required
-                    disabled={isDisabled}
-                  />
+                  <Input id="personCount" name="personCount" type="number" value={formData.personCount} onChange={handleNumberChange} min={1} className="h-12" required disabled={isDisabled} />
                 </div>
                 
                 <div className="space-y-2">
@@ -411,16 +314,7 @@ const BookingForm = ({ isOpen, onClose }: BookingFormProps) => {
                     <Clock className="h-4 w-4 text-green-600" />
                     <span>Дата и время</span>
                   </Label>
-                  <Input
-                    id="dateTime"
-                    name="dateTime"
-                    type="datetime-local"
-                    value={formData.dateTime}
-                    onChange={handleChange}
-                    className="h-12"
-                    required
-                    disabled={isDisabled}
-                  />
+                  <Input id="dateTime" name="dateTime" type="datetime-local" value={formData.dateTime} onChange={handleChange} className="h-12" required disabled={isDisabled} />
                 </div>
               </div>
               
@@ -429,33 +323,21 @@ const BookingForm = ({ isOpen, onClose }: BookingFormProps) => {
                   <UtensilsCrossed className="h-4 w-4 text-green-600" />
                   <span>Меню (опционально)</span>
                 </Label>
-                <Textarea
-                  id="menu"
-                  name="menu"
-                  value={formData.menu || ''}
-                  onChange={handleChange}
-                  placeholder="Описание заказанных блюд"
-                  rows={3}
-                  disabled={isDisabled}
-                />
+                <Textarea id="menu" name="menu" value={formData.menu || ''} onChange={handleChange} placeholder="Описание заказанных блюд" rows={3} disabled={isDisabled} />
               </div>
               
               <div className="flex justify-between gap-2 pt-4">
                 <Button type="button" variant="outline" onClick={moveToPrevTab}>
                   Назад
                 </Button>
-                {!isDisabled && (
-                  <Button onClick={handleSubmit}>
+                {!isDisabled && <Button onClick={handleSubmit}>
                     {isEditingBooking ? 'Сохранить' : 'Добавить бронирование'}
-                  </Button>
-                )}
+                  </Button>}
               </div>
             </div>
           </TabsContent>
         </Tabs>
       </DialogContent>
-    </Dialog>
-  );
+    </Dialog>;
 };
-
 export default BookingForm;
