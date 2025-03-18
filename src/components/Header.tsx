@@ -15,7 +15,11 @@ import {
 import ThemeToggle from './ThemeToggle';
 import { useIsMobile } from '@/hooks/use-mobile';
 
-const Header = () => {
+interface HeaderProps {
+  currentTime?: string;
+}
+
+const Header = ({ currentTime }: HeaderProps) => {
   const { currentUser, logout } = useStore();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
@@ -41,6 +45,11 @@ const Header = () => {
         </div>
         
         <div className="flex items-center space-x-2">
+          {currentTime && (
+            <div className="hidden md:block text-sm font-medium mr-3 bg-muted/40 p-2 rounded">
+              {currentTime}
+            </div>
+          )}
           <ThemeToggle />
           
           {currentUser && (

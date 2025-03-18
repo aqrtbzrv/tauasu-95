@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useStore } from '@/lib/store';
 import {
@@ -38,7 +39,8 @@ import {
   UtensilsCrossed 
 } from 'lucide-react';
 
-const TIMEZONE_OFFSET = 6;
+// Часовой пояс Алматы GMT+5
+const TIMEZONE_OFFSET = 5;
 
 interface BookingFormProps {
   isOpen: boolean;
@@ -55,7 +57,10 @@ const BookingForm = ({ isOpen, onClose }: BookingFormProps) => {
     editBooking,
     selectedDate,
     isZoneBooked,
+    currentUser,
   } = useStore();
+  
+  const isAdmin = currentUser?.role === 'admin';
   
   const [formData, setFormData] = useState<Partial<Booking>>({
     zoneId: '',
@@ -204,12 +209,20 @@ const BookingForm = ({ isOpen, onClose }: BookingFormProps) => {
     onClose();
   };
 
+  // Only admins can edit bookings, regular staff can view but not edit
+  const isDisabled = !isAdmin;
+
+  // If user is not admin, they should not be able to add or edit bookings
+  if (!isAdmin && !isEditingBooking) {
+    return null;
+  }
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">
-            {isEditingBooking ? 'Редактировать бронирование' : 'Новое бронирование'}
+            {isEditingBooking ? 'Детали бронирования' : 'Новое бронирование'}
           </DialogTitle>
         </DialogHeader>
         
@@ -240,6 +253,7 @@ const BookingForm = ({ isOpen, onClose }: BookingFormProps) => {
                 <Select
                   value={formData.zoneId}
                   onValueChange={(value) => handleSelectChange('zoneId', value)}
+                  disabled={isDisabled}
                 >
                   <SelectTrigger className="h-12">
                     <SelectValue placeholder="Выберите зону" />
@@ -276,9 +290,11 @@ const BookingForm = ({ isOpen, onClose }: BookingFormProps) => {
                 <Button type="button" variant="outline" onClick={handleCancel}>
                   Отмена
                 </Button>
-                <Button onClick={moveToNextTab}>
-                  Далее
-                </Button>
+                {!isDisabled && (
+                  <Button onClick={moveToNextTab}>
+                    Далее
+                  </Button>
+                )}
               </div>
             </div>
           </TabsContent>
@@ -298,6 +314,7 @@ const BookingForm = ({ isOpen, onClose }: BookingFormProps) => {
                   placeholder="Введите имя клиента"
                   className="h-12"
                   required
+                  disabled={isDisabled}
                 />
               </div>
               
@@ -314,6 +331,7 @@ const BookingForm = ({ isOpen, onClose }: BookingFormProps) => {
                   placeholder="+7 (XXX) XXX-XX-XX"
                   className="h-12"
                   required
+                  disabled={isDisabled}
                 />
               </div>
               
@@ -321,9 +339,11 @@ const BookingForm = ({ isOpen, onClose }: BookingFormProps) => {
                 <Button type="button" variant="outline" onClick={moveToPrevTab}>
                   Назад
                 </Button>
-                <Button onClick={moveToNextTab}>
-                  Далее
-                </Button>
+                {!isDisabled && (
+                  <Button onClick={moveToNextTab}>
+                    Далее
+                  </Button>
+                )}
               </div>
             </div>
           </TabsContent>
@@ -345,6 +365,7 @@ const BookingForm = ({ isOpen, onClose }: BookingFormProps) => {
                     min={0}
                     className="h-12"
                     required
+                    disabled={isDisabled}
                   />
                 </div>
                 
@@ -362,6 +383,7 @@ const BookingForm = ({ isOpen, onClose }: BookingFormProps) => {
                     min={0}
                     className="h-12"
                     required
+                    disabled={isDisabled}
                   />
                 </div>
               </div>
@@ -381,6 +403,7 @@ const BookingForm = ({ isOpen, onClose }: BookingFormProps) => {
                     min={1}
                     className="h-12"
                     required
+                    disabled={isDisabled}
                   />
                 </div>
                 
@@ -397,6 +420,7 @@ const BookingForm = ({ isOpen, onClose }: BookingFormProps) => {
                     onChange={handleChange}
                     className="h-12"
                     required
+                    disabled={isDisabled}
                   />
                 </div>
               </div>
@@ -413,6 +437,7 @@ const BookingForm = ({ isOpen, onClose }: BookingFormProps) => {
                   onChange={handleChange}
                   placeholder="Описание заказанных блюд"
                   rows={3}
+                  disabled={isDisabled}
                 />
               </div>
               
@@ -420,9 +445,11 @@ const BookingForm = ({ isOpen, onClose }: BookingFormProps) => {
                 <Button type="button" variant="outline" onClick={moveToPrevTab}>
                   Назад
                 </Button>
-                <Button onClick={handleSubmit}>
-                  {isEditingBooking ? 'Сохранить' : 'Добавить бронирование'}
-                </Button>
+                {!isDisabled && (
+                  <Button onClick={handleSubmit}>
+                    {isEditingBooking ? 'Сохранить' : 'Добавить бронирование'}
+                  </Button>
+                )}
               </div>
             </div>
           </TabsContent>

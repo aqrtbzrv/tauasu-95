@@ -19,12 +19,26 @@ import {
   BarChartIcon 
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { format } from 'date-fns';
+import { ru } from 'date-fns/locale';
+
+const TIMEZONE_OFFSET = 5; // Almaty GMT+5
 
 const Index = () => {
   const { currentUser, editBooking, currentBooking, isEditingBooking } = useStore();
   const [formOpen, setFormOpen] = useState(false);
+  const [currentTime, setCurrentTime] = useState(new Date());
   const navigate = useNavigate();
   const isAdmin = currentUser?.role === 'admin';
+  
+  // Update current time every minute
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 60000);
+    
+    return () => clearInterval(timer);
+  }, []);
   
   useEffect(() => {
     if (!currentUser) {
@@ -49,9 +63,16 @@ const Index = () => {
     setFormOpen(false);
   };
 
+  // Format the current time in Almaty timezone (GMT+5)
+  const formattedTime = format(
+    new Date(currentTime.getTime() + TIMEZONE_OFFSET * 60 * 60 * 1000),
+    'dd MMM yyyy HH:mm',
+    { locale: ru }
+  );
+
   return (
     <div className="min-h-screen flex flex-col">
-      <Header />
+      <Header currentTime={formattedTime} />
       
       <main className="flex-1 container mx-auto px-4 py-6">
         <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -126,6 +147,12 @@ const Index = () => {
           onClose={handleCloseForm} 
         />
       </main>
+
+      <footer className="w-full py-4 px-6 bg-muted/30 border-t mt-auto">
+        <div className="container mx-auto text-center text-xs text-muted-foreground">
+          © {new Date().getFullYear()} Все права защищены. asqartbzrv
+        </div>
+      </footer>
     </div>
   );
 };
