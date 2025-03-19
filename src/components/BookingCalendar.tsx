@@ -19,9 +19,6 @@ import { Button } from '@/components/ui/button';
 import { EditIcon, Trash2Icon } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 
-// Set timezone offset to 0
-const TIMEZONE_OFFSET = 0;
-
 const BookingCalendar = () => {
   const selectedDate = useStore((state) => state.selectedDate);
   const setSelectedDate = useStore((state) => state.setSelectedDate);

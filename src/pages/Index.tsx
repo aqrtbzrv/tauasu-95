@@ -22,9 +22,6 @@ import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
 
-// Set to 0 for consistent time across the application
-const TIMEZONE_OFFSET = 0;
-
 const Index = () => {
   const { currentUser, editBooking, currentBooking, isEditingBooking } = useStore();
   const [formOpen, setFormOpen] = useState(false);

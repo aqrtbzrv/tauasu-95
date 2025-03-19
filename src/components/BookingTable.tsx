@@ -18,9 +18,6 @@ import { ru } from 'date-fns/locale';
 import { Booking } from '@/lib/types';
 import { useIsMobile } from '@/hooks/use-mobile';
 
-// Set timezone offset to 0
-const TIMEZONE_OFFSET = 0;
-
 const BookingTable = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
@@ -40,8 +37,6 @@ const BookingTable = () => {
   // Get current date for filtering past bookings
   const now = new Date();
   const today = startOfDay(now);
-  const monthStart = startOfMonth(now);
-  const monthEnd = endOfMonth(now);
   
   // Filter bookings by date (current and future dates only) and zone type if selected
   const filteredBookings = bookings.filter((booking) => {

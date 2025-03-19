@@ -14,9 +14,6 @@ import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { Users, Calendar, Home, Phone, DollarSign, Clock, UtensilsCrossed } from 'lucide-react';
 
-// Set timezone offset to 0
-const TIMEZONE_OFFSET = 0;
-
 interface BookingFormProps {
   isOpen: boolean;
   onClose: () => void;
