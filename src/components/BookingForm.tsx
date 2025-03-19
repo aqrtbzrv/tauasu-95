@@ -35,35 +35,57 @@ const BookingForm = ({
     currentUser
   } = useStore();
   const isAdmin = currentUser?.role === 'admin';
-  const [formData, setFormData] = useState<Partial<Booking>>({
+  const [formData, setFormData] = useState<Partial<Booking & { endTime: string }>>({
     zoneId: '',
     clientName: '',
     rentalCost: null,
     prepayment: null,
     personCount: 1,
     dateTime: `${selectedDate}T12:00`,
+    endTime: `${selectedDate}T14:00`,
     menu: '',
     phoneNumber: ''
   });
   const [availableZones, setAvailableZones] = useState<Zone[]>([]);
   const [activeTab, setActiveTab] = useState('zone');
+  const [timeOptions, setTimeOptions] = useState<string[]>([]);
+
+  // Generate time options in 30-minute increments
+  useEffect(() => {
+    const options = [];
+    for (let hour = 0; hour < 24; hour++) {
+      options.push(`${hour.toString().padStart(2, '0')}:00`);
+      options.push(`${hour.toString().padStart(2, '0')}:30`);
+    }
+    setTimeOptions(options);
+  }, []);
 
   useEffect(() => {
     if (isEditingBooking && currentBooking) {
+      const bookingDateTime = new Date(currentBooking.dateTime);
+      const bookingTime = format(bookingDateTime, 'HH:mm');
+      
+      // Calculate end time (default to 2 hours after start time)
+      const endDateTime = new Date(bookingDateTime);
+      endDateTime.setHours(endDateTime.getHours() + 2);
+      const endTime = format(endDateTime, 'HH:mm');
+      
       setFormData({
-        ...currentBooking
+        ...currentBooking,
+        endTime: `${currentBooking.dateTime.split('T')[0]}T${endTime}`
       });
       setActiveTab('zone');
     } else {
       const now = new Date();
-      const formattedDate = format(now, "yyyy-MM-dd'T'HH:mm");
+      const formattedDate = format(now, "yyyy-MM-dd");
       setFormData({
         zoneId: '',
         clientName: '',
         rentalCost: null,
         prepayment: null,
         personCount: 1,
-        dateTime: formattedDate,
+        dateTime: `${formattedDate}T12:00`,
+        endTime: `${formattedDate}T14:00`,
         menu: '',
         phoneNumber: ''
       });
@@ -108,6 +130,56 @@ const BookingForm = ({
     setFormData({
       ...formData,
       [name]: value
+    });
+  };
+
+  const handleTimeChange = (type: 'start' | 'end', time: string) => {
+    const datePart = formData.dateTime?.split('T')[0] || selectedDate;
+    if (type === 'start') {
+      setFormData({
+        ...formData,
+        dateTime: `${datePart}T${time.replace(':', ':')}:00`
+      });
+      
+      // Automatically set end time to 2 hours after start if end time is before start time
+      const startHour = parseInt(time.split(':')[0], 10);
+      const startMinute = parseInt(time.split(':')[1], 10);
+      const endTime = formData.endTime?.split('T')[1].split(':') || [];
+      const endHour = parseInt(endTime[0] || '0', 10);
+      const endMinute = parseInt(endTime[1] || '0', 10);
+      
+      if (startHour > endHour || (startHour === endHour && startMinute >= endMinute)) {
+        let newEndHour = startHour + 2;
+        if (newEndHour >= 24) {
+          newEndHour = 23;
+          setFormData(prev => ({
+            ...prev,
+            endTime: `${datePart}T${newEndHour.toString().padStart(2, '0')}:30:00`
+          }));
+        } else {
+          setFormData(prev => ({
+            ...prev,
+            endTime: `${datePart}T${newEndHour.toString().padStart(2, '0')}:${startMinute.toString().padStart(2, '0')}:00`
+          }));
+        }
+      }
+    } else {
+      setFormData({
+        ...formData,
+        endTime: `${datePart}T${time.replace(':', ':')}:00`
+      });
+    }
+  };
+
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newDate = e.target.value;
+    const startTime = formData.dateTime?.split('T')[1] || '12:00:00';
+    const endTime = formData.endTime?.split('T')[1] || '14:00:00';
+    
+    setFormData({
+      ...formData,
+      dateTime: `${newDate}T${startTime}`,
+      endTime: `${newDate}T${endTime}`
     });
   };
 
@@ -170,6 +242,15 @@ const BookingForm = ({
       return;
     }
     
+    // Ensure start time is before end time
+    const startDateTime = new Date(formData.dateTime);
+    const endDateTime = new Date(formData.endTime || '');
+    
+    if (startDateTime >= endDateTime) {
+      toast.error('Время начала должно быть раньше времени окончания');
+      return;
+    }
+    
     // Ensure numbers are properly handled
     const bookingData = {
       ...formData,
@@ -178,10 +259,13 @@ const BookingForm = ({
       personCount: formData.personCount || 1
     };
     
+    // Remove endTime from the data sent to store as it's not part of the Booking type
+    const { endTime, ...bookingDataWithoutEndTime } = bookingData;
+    
     if (isEditingBooking && currentBooking) {
-      updateBooking(currentBooking.id, bookingData);
+      updateBooking(currentBooking.id, bookingDataWithoutEndTime);
     } else {
-      addBooking(bookingData as Omit<Booking, 'id' | 'createdAt' | 'updatedAt'>);
+      addBooking(bookingDataWithoutEndTime as Omit<Booking, 'id' | 'createdAt' | 'updatedAt'>);
     }
     onClose();
   };
@@ -196,6 +280,11 @@ const BookingForm = ({
   if (!isAdmin && !isEditingBooking) {
     return null;
   }
+
+  const getTimeFromISOString = (isoString?: string) => {
+    if (!isoString) return '';
+    return isoString.split('T')[1].substring(0, 5);
+  };
 
   return <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[600px] w-[calc(100%-2rem)] mx-auto max-h-[90vh] overflow-y-auto rounded-2xl">
@@ -356,11 +445,67 @@ const BookingForm = ({
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="dateTime" className="text-base font-medium flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-green-600" />
-                    <span>Дата и время</span>
+                  <Label htmlFor="bookingDate" className="text-base font-medium flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-green-600" />
+                    <span>Дата бронирования</span>
                   </Label>
-                  <Input id="dateTime" name="dateTime" type="datetime-local" value={formData.dateTime} onChange={handleChange} className="h-12" required disabled={isDisabled} />
+                  <Input 
+                    id="bookingDate" 
+                    type="date" 
+                    value={formData.dateTime?.split('T')[0]} 
+                    onChange={handleDateChange} 
+                    className="h-12" 
+                    required 
+                    disabled={isDisabled} 
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="startTime" className="text-base font-medium flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-green-600" />
+                    <span>Время начала</span>
+                  </Label>
+                  <Select 
+                    value={getTimeFromISOString(formData.dateTime)} 
+                    onValueChange={(value) => handleTimeChange('start', value)}
+                    disabled={isDisabled}
+                  >
+                    <SelectTrigger className="h-12">
+                      <SelectValue placeholder="Выберите время" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {timeOptions.map(time => (
+                        <SelectItem key={`start-${time}`} value={time}>
+                          {time}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="endTime" className="text-base font-medium flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-green-600" />
+                    <span>Время окончания</span>
+                  </Label>
+                  <Select 
+                    value={getTimeFromISOString(formData.endTime)} 
+                    onValueChange={(value) => handleTimeChange('end', value)}
+                    disabled={isDisabled}
+                  >
+                    <SelectTrigger className="h-12">
+                      <SelectValue placeholder="Выберите время" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {timeOptions.map(time => (
+                        <SelectItem key={`end-${time}`} value={time}>
+                          {time}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
               
