@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useStore } from '@/lib/store';
 import AuthForm from '@/components/AuthForm';
@@ -22,7 +21,8 @@ import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
 
-const TIMEZONE_OFFSET = 0; // Set to 0 for consistent time across the application
+// Set to 0 for consistent time across the application
+const TIMEZONE_OFFSET = 0;
 
 const Index = () => {
   const { currentUser, editBooking, currentBooking, isEditingBooking } = useStore();

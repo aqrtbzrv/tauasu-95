@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useStore } from '@/lib/store';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
@@ -40,8 +41,8 @@ const BookingForm = ({
   const [formData, setFormData] = useState<Partial<Booking>>({
     zoneId: '',
     clientName: '',
-    rentalCost: 0,
-    prepayment: 0,
+    rentalCost: null,
+    prepayment: null,
     personCount: 1,
     dateTime: `${selectedDate}T12:00`,
     menu: '',
@@ -63,8 +64,8 @@ const BookingForm = ({
       setFormData({
         zoneId: '',
         clientName: '',
-        rentalCost: 0,
-        prepayment: 0,
+        rentalCost: null,
+        prepayment: null,
         personCount: 1,
         dateTime: formattedDate,
         menu: '',
@@ -172,13 +173,19 @@ const BookingForm = ({
       setActiveTab('details');
       return;
     }
+    
+    // Ensure numbers are properly handled
+    const bookingData = {
+      ...formData,
+      rentalCost: formData.rentalCost || 0,
+      prepayment: formData.prepayment || 0,
+      personCount: formData.personCount || 1
+    };
+    
     if (isEditingBooking && currentBooking) {
-      updateBooking(currentBooking.id, formData);
+      updateBooking(currentBooking.id, bookingData);
     } else {
-      const bookingData = {
-        ...formData
-      } as Omit<Booking, 'id' | 'createdAt' | 'updatedAt'>;
-      addBooking(bookingData);
+      addBooking(bookingData as Omit<Booking, 'id' | 'createdAt' | 'updatedAt'>);
     }
     onClose();
   };
@@ -298,7 +305,18 @@ const BookingForm = ({
                     <DollarSign className="h-4 w-4 text-green-600" />
                     <span>Стоимость аренды</span>
                   </Label>
-                  <Input id="rentalCost" name="rentalCost" type="number" value={formData.rentalCost} onChange={handleNumberChange} min={0} className="h-12" required disabled={isDisabled} />
+                  <Input 
+                    id="rentalCost" 
+                    name="rentalCost" 
+                    type="number" 
+                    value={formData.rentalCost === null ? '' : formData.rentalCost} 
+                    onChange={handleNumberChange} 
+                    min={0} 
+                    className="h-12" 
+                    placeholder="Введите стоимость"
+                    required 
+                    disabled={isDisabled} 
+                  />
                 </div>
                 
                 <div className="space-y-2">
@@ -306,7 +324,18 @@ const BookingForm = ({
                     <DollarSign className="h-4 w-4 text-green-600" />
                     <span>Предоплата</span>
                   </Label>
-                  <Input id="prepayment" name="prepayment" type="number" value={formData.prepayment} onChange={handleNumberChange} min={0} className="h-12" required disabled={isDisabled} />
+                  <Input 
+                    id="prepayment" 
+                    name="prepayment" 
+                    type="number" 
+                    value={formData.prepayment === null ? '' : formData.prepayment} 
+                    onChange={handleNumberChange} 
+                    min={0} 
+                    className="h-12" 
+                    placeholder="Введите предоплату"
+                    required 
+                    disabled={isDisabled} 
+                  />
                 </div>
               </div>
               
@@ -316,7 +345,18 @@ const BookingForm = ({
                     <Users className="h-4 w-4 text-green-600" />
                     <span>Количество гостей</span>
                   </Label>
-                  <Input id="personCount" name="personCount" type="number" value={formData.personCount} onChange={handleNumberChange} min={1} className="h-12" required disabled={isDisabled} />
+                  <Input 
+                    id="personCount" 
+                    name="personCount" 
+                    type="number" 
+                    value={formData.personCount === null ? '' : formData.personCount} 
+                    onChange={handleNumberChange} 
+                    min={1} 
+                    className="h-12" 
+                    placeholder="Введите количество"
+                    required 
+                    disabled={isDisabled} 
+                  />
                 </div>
                 
                 <div className="space-y-2">

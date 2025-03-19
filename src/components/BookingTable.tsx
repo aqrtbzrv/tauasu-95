@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
@@ -13,7 +12,7 @@ import {
   DialogFooter
 } from '@/components/ui/dialog';
 import { EditIcon, SearchIcon, Trash2Icon, PhoneIcon, XIcon } from 'lucide-react';
-import { format, parseISO, addHours, startOfMonth, endOfMonth, startOfDay, isBefore } from 'date-fns';
+import { format, parseISO, addHours, startOfMonth, endOfMonth, startOfDay, isBefore, isAfter } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { Booking } from '@/lib/types';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -37,7 +36,7 @@ const BookingTable = () => {
   // Get sorted bookings for the current month
   const bookings = getSortedBookings();
   
-  // Get current month start and end
+  // Get current date for filtering past bookings
   const now = new Date();
   const today = startOfDay(now);
   const monthStart = startOfMonth(now);
@@ -56,13 +55,10 @@ const BookingTable = () => {
     // Filter out past bookings - only show current and future bookings
     const isFutureOrToday = !isBefore(bookingDate, today);
     
-    // Include bookings from the current month and future
-    const isCurrentMonthOrFuture = bookingDate >= monthStart;
-    
     const matchesDate = selectedDate === 'all' || booking.dateTime.split('T')[0] === selectedDate;
     const matchesZoneType = selectedZoneType === 'all' || zone?.type === selectedZoneType;
     
-    return matchesSearch && (matchesDate || (isCurrentMonthOrFuture && isFutureOrToday)) && matchesZoneType;
+    return matchesSearch && isFutureOrToday && matchesZoneType && (selectedDate === 'all' || matchesDate);
   });
 
   const formatDate = (dateTime: string) => {
