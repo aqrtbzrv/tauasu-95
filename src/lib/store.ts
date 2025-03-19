@@ -1,3 +1,4 @@
+
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { AppState, Booking, Customer, User, Zone, ZoneType } from './types';
@@ -212,7 +213,7 @@ export const useStore = create<AppState>()(
               rental_price: booking.rentalCost,
               prepayment: booking.prepayment,
               number_of_people: booking.personCount,
-              date_time: booking.dateTime, // Use the dateTime as-is without timezone adjustment
+              date_time: booking.dateTime, // Use the original dateTime
               menu: booking.menu,
               phone_number: booking.phoneNumber,
               service_type: get().getZoneById(booking.zoneId)?.type || 'Unknown'
@@ -234,7 +235,7 @@ export const useStore = create<AppState>()(
               rentalCost: data[0].rental_price,
               prepayment: data[0].prepayment,
               personCount: data[0].number_of_people,
-              dateTime: data[0].date_time,
+              dateTime: data[0].date_time, // Use the original time from the database
               menu: data[0].menu || undefined,
               phoneNumber: data[0].phone_number,
               createdAt: data[0].created_at,
@@ -290,7 +291,7 @@ export const useStore = create<AppState>()(
           if (bookingData.rentalCost !== undefined) updateData.rental_price = bookingData.rentalCost;
           if (bookingData.prepayment !== undefined) updateData.prepayment = bookingData.prepayment;
           if (bookingData.personCount !== undefined) updateData.number_of_people = bookingData.personCount;
-          if (bookingData.dateTime) updateData.date_time = bookingData.dateTime;
+          if (bookingData.dateTime) updateData.date_time = bookingData.dateTime; // Use the original time
           if (bookingData.menu !== undefined) updateData.menu = bookingData.menu;
           if (bookingData.phoneNumber) updateData.phone_number = bookingData.phoneNumber;
           

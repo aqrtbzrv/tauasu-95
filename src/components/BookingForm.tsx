@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Booking, Zone } from '@/lib/types';
 import { toast } from 'sonner';
-import { addHours, format } from 'date-fns';
+import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { Users, Calendar, Home, Phone, DollarSign, Clock, UtensilsCrossed } from 'lucide-react';
 
@@ -59,8 +59,7 @@ const BookingForm = ({
       setActiveTab('zone');
     } else {
       const now = new Date();
-      const nowWithTimezone = addHours(now, TIMEZONE_OFFSET);
-      const formattedDate = format(nowWithTimezone, "yyyy-MM-dd'T'HH:mm");
+      const formattedDate = format(now, "yyyy-MM-dd'T'HH:mm");
       setFormData({
         zoneId: '',
         clientName: '',
@@ -104,7 +103,7 @@ const BookingForm = ({
     } = e.target;
     setFormData({
       ...formData,
-      [name]: Number(value)
+      [name]: value === '' ? null : Number(value)
     });
   };
 

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
@@ -12,7 +13,7 @@ import {
   DialogFooter
 } from '@/components/ui/dialog';
 import { EditIcon, SearchIcon, Trash2Icon, PhoneIcon, XIcon } from 'lucide-react';
-import { format, parseISO, addHours, startOfMonth, endOfMonth, startOfDay, isBefore, isAfter } from 'date-fns';
+import { format, parseISO, startOfMonth, endOfMonth, startOfDay, isBefore, isAfter } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { Booking } from '@/lib/types';
 import { useIsMobile } from '@/hooks/use-mobile';

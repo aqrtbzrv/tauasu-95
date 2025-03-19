@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useStore } from '@/lib/store';
 import AuthForm from '@/components/AuthForm';
@@ -63,9 +64,9 @@ const Index = () => {
     setFormOpen(false);
   };
 
-  // Format the current time with timezone offset 0
+  // Format the current time
   const formattedTime = format(
-    new Date(currentTime.getTime() + TIMEZONE_OFFSET * 60 * 60 * 1000),
+    currentTime,
     'dd MMM yyyy HH:mm',
     { locale: ru }
   );
