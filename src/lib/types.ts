@@ -1,4 +1,3 @@
-
 export type UserRole = 'admin' | 'staff';
 
 export interface User {
@@ -46,7 +45,6 @@ export interface Customer {
   lastBooking: string;
 }
 
-// Helper function to adjust display time (5 hours earlier)
 export const adjustDisplayTime = (dateTime: string): Date => {
   const date = new Date(dateTime);
   date.setHours(date.getHours() - 5);

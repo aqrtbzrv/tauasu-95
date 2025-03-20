@@ -4,14 +4,9 @@ import { useStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { LockIcon, UserIcon, InfoIcon } from 'lucide-react';
+import { LockIcon, UserIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+import { Separator } from "@/components/ui/separator";
 import { toast } from 'sonner';
 
 const AuthForm = () => {
@@ -28,17 +23,20 @@ const AuthForm = () => {
     }
   };
 
-  const setCredentials = (username: string, password: string) => {
-    setUsername(username);
-    setPassword(password);
-    toast.info('Учетные данные заполнены, нажмите "Войти"');
-  };
-
   return (
-    <div className="flex items-center justify-center min-h-screen p-4">
+    <div className="flex flex-col items-center justify-center min-h-screen p-4">
       <Card className="w-full max-w-md mx-auto animate-scale-in glass-card">
-        <CardHeader className="space-y-1">
+        <CardHeader className="space-y-2 flex flex-col items-center">
+          <img 
+            src="/lovable-uploads/e1dd7c30-e3ad-40c1-b017-be5927100c96.png" 
+            alt="Тауасу Демалыс Мекени" 
+            className="h-24 mb-2"
+          />
           <CardTitle className="text-2xl font-bold text-center">TauAsu</CardTitle>
+          <CardDescription className="text-center">
+            DEMALYS MEKENI
+          </CardDescription>
+          <Separator className="my-2" />
           <CardDescription className="text-center">
             Войдите в систему, чтобы получить доступ
           </CardDescription>
@@ -70,79 +68,14 @@ const AuthForm = () => {
                 />
               </div>
             </div>
-            
-            <Accordion type="single" collapsible className="mt-4">
-              <AccordionItem value="accounts">
-                <AccordionTrigger className="text-sm flex items-center">
-                  <InfoIcon className="h-4 w-4 mr-2" />
-                  Доступные аккаунты
-                </AccordionTrigger>
-                <AccordionContent>
-                  <div className="text-sm space-y-3 p-2 bg-muted/50 rounded-md">
-                    <div className="border-b pb-2">
-                      <h3 className="font-medium mb-1">Административный доступ:</h3>
-                      <div className="grid grid-cols-2 gap-1">
-                        <Button 
-                          type="button" 
-                          variant="outline" 
-                          size="sm"
-                          className="text-xs justify-start"
-                          onClick={() => setCredentials('admin', 'adminadmin')}
-                        >
-                          admin / adminadmin
-                        </Button>
-                        <Button 
-                          type="button" 
-                          variant="outline" 
-                          size="sm"
-                          className="text-xs justify-start"
-                          onClick={() => setCredentials('callcenter', 'callcenter')}
-                        >
-                          callcenter / callcenter
-                        </Button>
-                      </div>
-                    </div>
-                    <div>
-                      <h3 className="font-medium mb-1">Персональный доступ:</h3>
-                      <div className="grid grid-cols-2 gap-1">
-                        <Button 
-                          type="button" 
-                          variant="outline" 
-                          size="sm"
-                          className="text-xs justify-start"
-                          onClick={() => setCredentials('waiter', 'waiterwaiter')}
-                        >
-                          waiter / waiterwaiter
-                        </Button>
-                        <Button 
-                          type="button" 
-                          variant="outline" 
-                          size="sm"
-                          className="text-xs justify-start"
-                          onClick={() => setCredentials('cookcook', 'cook123')}
-                        >
-                          cookcook / cook123
-                        </Button>
-                        <Button 
-                          type="button" 
-                          variant="outline" 
-                          size="sm"
-                          className="text-xs justify-start"
-                          onClick={() => setCredentials('jako2025', 'zhanat2025')}
-                        >
-                          jako2025 / zhanat2025
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-            </Accordion>
           </CardContent>
-          <CardFooter>
+          <CardFooter className="flex flex-col space-y-4">
             <Button type="submit" className="w-full">
               Войти
             </Button>
+            <div className="text-xs text-muted-foreground text-center w-full mt-6">
+              © Все права защищены <span className="opacity-70">@asqartbzrv</span>
+            </div>
           </CardFooter>
         </form>
       </Card>
