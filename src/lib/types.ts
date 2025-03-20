@@ -5,7 +5,6 @@ export interface User {
   username: string;
   password: string;
   role: UserRole;
-  displayName?: string;
 }
 
 export type ZoneType = 
@@ -31,7 +30,6 @@ export interface Booking {
   prepayment: number;
   personCount: number;
   dateTime: string;
-  endTime?: string;
   menu?: string;
   phoneNumber: string;
   createdAt: string;

@@ -282,13 +282,6 @@ const BookingCalendar = () => {
                 </div>
               </div>
               
-              {selectedBooking.endTime && (
-                <div>
-                  <h3 className="font-medium text-muted-foreground">Время окончания</h3>
-                  <p className="text-lg">{selectedBooking.endTime}</p>
-                </div>
-              )}
-              
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <h3 className="font-medium text-muted-foreground">Стоимость</h3>

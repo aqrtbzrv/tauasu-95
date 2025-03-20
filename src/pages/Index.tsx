@@ -74,15 +74,7 @@ const Index = () => {
       
       <main className="flex-1 container mx-auto px-4 py-6">
         <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <h1 className="text-2xl font-bold">
-            Управление бронированиями
-            {currentUser && (
-              <span className="ml-2 text-sm font-normal text-muted-foreground">
-                (Пользователь: {currentUser.displayName || currentUser.username}, 
-                Роль: {currentUser.role === 'admin' ? 'Администратор' : 'Персонал'})
-              </span>
-            )}
-          </h1>
+          <h1 className="text-2xl font-bold">Управление бронированиями</h1>
           {isAdmin && (
             <Button onClick={handleAddBooking} className="shrink-0">
               <PlusIcon className="mr-2 h-4 w-4" />
@@ -111,24 +103,20 @@ const Index = () => {
                   <CalendarDaysIcon className="mr-2 h-4 w-4" />
                   <span className="whitespace-nowrap">Календарь</span>
                 </TabsTrigger>
-                {isAdmin && (
-                  <TabsTrigger 
-                    value="customers" 
-                    className="flex items-center py-3 rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm"
-                  >
-                    <UsersIcon className="mr-2 h-4 w-4" />
-                    <span className="whitespace-nowrap">Клиенты</span>
-                  </TabsTrigger>
-                )}
-                {isAdmin && (
-                  <TabsTrigger 
-                    value="analytics" 
-                    className="flex items-center py-3 rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm"
-                  >
-                    <BarChartIcon className="mr-2 h-4 w-4" />
-                    <span className="whitespace-nowrap">Аналитика</span>
-                  </TabsTrigger>
-                )}
+                <TabsTrigger 
+                  value="customers" 
+                  className="flex items-center py-3 rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                >
+                  <UsersIcon className="mr-2 h-4 w-4" />
+                  <span className="whitespace-nowrap">Клиенты</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="analytics" 
+                  className="flex items-center py-3 rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                >
+                  <BarChartIcon className="mr-2 h-4 w-4" />
+                  <span className="whitespace-nowrap">Аналитика</span>
+                </TabsTrigger>
               </TabsList>
             </div>
             
@@ -141,27 +129,21 @@ const Index = () => {
                 <BookingCalendar />
               </TabsContent>
               
-              {isAdmin && (
-                <TabsContent value="customers" className="animate-in fade-in-50 m-0">
-                  <CustomersDatabase />
-                </TabsContent>
-              )}
+              <TabsContent value="customers" className="animate-in fade-in-50 m-0">
+                <CustomersDatabase />
+              </TabsContent>
               
-              {isAdmin && (
-                <TabsContent value="analytics" className="animate-in fade-in-50 m-0">
-                  <AnalyticsView />
-                </TabsContent>
-              )}
+              <TabsContent value="analytics" className="animate-in fade-in-50 m-0">
+                <AnalyticsView />
+              </TabsContent>
             </div>
           </Tabs>
         </div>
         
-        {isAdmin && (
-          <BookingForm 
-            isOpen={formOpen || isEditingBooking} 
-            onClose={handleCloseForm} 
-          />
-        )}
+        <BookingForm 
+          isOpen={formOpen || isEditingBooking} 
+          onClose={handleCloseForm} 
+        />
       </main>
 
       <footer className="w-full py-4 px-6 bg-muted/30 border-t mt-auto">
