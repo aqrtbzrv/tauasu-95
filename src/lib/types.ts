@@ -5,6 +5,7 @@ export interface User {
   username: string;
   password: string;
   role: UserRole;
+  displayName?: string;
 }
 
 export type ZoneType = 

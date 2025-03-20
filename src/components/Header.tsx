@@ -57,7 +57,7 @@ const Header = ({ currentTime }: HeaderProps) => {
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="flex items-center space-x-1">
                   <UserCircle className="h-5 w-5 mr-1" />
-                  {!isMobile && <span>{currentUser.username}</span>}
+                  {!isMobile && <span>{currentUser.displayName || currentUser.username}</span>}
                   <ChevronDown className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>

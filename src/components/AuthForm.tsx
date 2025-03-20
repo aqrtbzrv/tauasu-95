@@ -4,8 +4,15 @@ import { useStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { LockIcon, UserIcon } from 'lucide-react';
+import { LockIcon, UserIcon, InfoIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { 
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { toast } from 'sonner';
 
 const AuthForm = () => {
   const [username, setUsername] = useState('');
@@ -19,6 +26,12 @@ const AuthForm = () => {
     if (success) {
       navigate('/');
     }
+  };
+
+  const setCredentials = (username: string, password: string) => {
+    setUsername(username);
+    setPassword(password);
+    toast.info('Учетные данные заполнены, нажмите "Войти"');
   };
 
   return (
@@ -57,6 +70,74 @@ const AuthForm = () => {
                 />
               </div>
             </div>
+            
+            <Accordion type="single" collapsible className="mt-4">
+              <AccordionItem value="accounts">
+                <AccordionTrigger className="text-sm flex items-center">
+                  <InfoIcon className="h-4 w-4 mr-2" />
+                  Доступные аккаунты
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div className="text-sm space-y-3 p-2 bg-muted/50 rounded-md">
+                    <div className="border-b pb-2">
+                      <h3 className="font-medium mb-1">Административный доступ:</h3>
+                      <div className="grid grid-cols-2 gap-1">
+                        <Button 
+                          type="button" 
+                          variant="outline" 
+                          size="sm"
+                          className="text-xs justify-start"
+                          onClick={() => setCredentials('admin', 'adminadmin')}
+                        >
+                          admin / adminadmin
+                        </Button>
+                        <Button 
+                          type="button" 
+                          variant="outline" 
+                          size="sm"
+                          className="text-xs justify-start"
+                          onClick={() => setCredentials('callcenter', 'callcenter')}
+                        >
+                          callcenter / callcenter
+                        </Button>
+                      </div>
+                    </div>
+                    <div>
+                      <h3 className="font-medium mb-1">Персональный доступ:</h3>
+                      <div className="grid grid-cols-2 gap-1">
+                        <Button 
+                          type="button" 
+                          variant="outline" 
+                          size="sm"
+                          className="text-xs justify-start"
+                          onClick={() => setCredentials('waiter', 'waiterwaiter')}
+                        >
+                          waiter / waiterwaiter
+                        </Button>
+                        <Button 
+                          type="button" 
+                          variant="outline" 
+                          size="sm"
+                          className="text-xs justify-start"
+                          onClick={() => setCredentials('cookcook', 'cook123')}
+                        >
+                          cookcook / cook123
+                        </Button>
+                        <Button 
+                          type="button" 
+                          variant="outline" 
+                          size="sm"
+                          className="text-xs justify-start"
+                          onClick={() => setCredentials('jako2025', 'zhanat2025')}
+                        >
+                          jako2025 / zhanat2025
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
           </CardContent>
           <CardFooter>
             <Button type="submit" className="w-full">

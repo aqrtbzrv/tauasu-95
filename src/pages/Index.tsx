@@ -103,20 +103,24 @@ const Index = () => {
                   <CalendarDaysIcon className="mr-2 h-4 w-4" />
                   <span className="whitespace-nowrap">Календарь</span>
                 </TabsTrigger>
-                <TabsTrigger 
-                  value="customers" 
-                  className="flex items-center py-3 rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm"
-                >
-                  <UsersIcon className="mr-2 h-4 w-4" />
-                  <span className="whitespace-nowrap">Клиенты</span>
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="analytics" 
-                  className="flex items-center py-3 rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm"
-                >
-                  <BarChartIcon className="mr-2 h-4 w-4" />
-                  <span className="whitespace-nowrap">Аналитика</span>
-                </TabsTrigger>
+                {isAdmin && (
+                  <TabsTrigger 
+                    value="customers" 
+                    className="flex items-center py-3 rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                  >
+                    <UsersIcon className="mr-2 h-4 w-4" />
+                    <span className="whitespace-nowrap">Клиенты</span>
+                  </TabsTrigger>
+                )}
+                {isAdmin && (
+                  <TabsTrigger 
+                    value="analytics" 
+                    className="flex items-center py-3 rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                  >
+                    <BarChartIcon className="mr-2 h-4 w-4" />
+                    <span className="whitespace-nowrap">Аналитика</span>
+                  </TabsTrigger>
+                )}
               </TabsList>
             </div>
             
@@ -129,21 +133,27 @@ const Index = () => {
                 <BookingCalendar />
               </TabsContent>
               
-              <TabsContent value="customers" className="animate-in fade-in-50 m-0">
-                <CustomersDatabase />
-              </TabsContent>
+              {isAdmin && (
+                <TabsContent value="customers" className="animate-in fade-in-50 m-0">
+                  <CustomersDatabase />
+                </TabsContent>
+              )}
               
-              <TabsContent value="analytics" className="animate-in fade-in-50 m-0">
-                <AnalyticsView />
-              </TabsContent>
+              {isAdmin && (
+                <TabsContent value="analytics" className="animate-in fade-in-50 m-0">
+                  <AnalyticsView />
+                </TabsContent>
+              )}
             </div>
           </Tabs>
         </div>
         
-        <BookingForm 
-          isOpen={formOpen || isEditingBooking} 
-          onClose={handleCloseForm} 
-        />
+        {isAdmin && (
+          <BookingForm 
+            isOpen={formOpen || isEditingBooking} 
+            onClose={handleCloseForm} 
+          />
+        )}
       </main>
 
       <footer className="w-full py-4 px-6 bg-muted/30 border-t mt-auto">

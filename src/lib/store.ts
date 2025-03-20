@@ -30,8 +30,11 @@ const initialZones: Zone[] = [
 
 // Define our users
 const users: User[] = [
-  { username: 'admin', password: 'adminadmin', role: 'admin' },
-  { username: 'person', password: 'personperson', role: 'staff' },
+  { username: 'admin', password: 'adminadmin', role: 'admin', displayName: 'Администратор' },
+  { username: 'callcenter', password: 'callcenter', role: 'admin', displayName: 'Call Center' },
+  { username: 'waiter', password: 'waiterwaiter', role: 'staff', displayName: 'Официант' },
+  { username: 'cookcook', password: 'cook123', role: 'staff', displayName: 'Повар' },
+  { username: 'jako2025', password: 'zhanat2025', role: 'staff', displayName: 'Жанат Молдажан' },
 ];
 
 // Get today's date in ISO format (YYYY-MM-DD)
