@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
@@ -15,7 +14,7 @@ import {
 import { EditIcon, SearchIcon, Trash2Icon, PhoneIcon, XIcon } from 'lucide-react';
 import { format, parseISO, startOfDay, isBefore, isAfter } from 'date-fns';
 import { ru } from 'date-fns/locale';
-import { Booking } from '@/lib/types';
+import { Booking, adjustDisplayTime } from '@/lib/types';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const BookingTable = () => {
@@ -58,7 +57,7 @@ const BookingTable = () => {
   });
 
   const formatDate = (dateTime: string) => {
-    const date = parseISO(dateTime);
+    const date = adjustDisplayTime(dateTime);
     return format(date, 'dd.MM.yyyy HH:mm', { locale: ru });
   };
 

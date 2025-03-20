@@ -45,6 +45,13 @@ export interface Customer {
   lastBooking: string;
 }
 
+// Helper function to adjust display time (5 hours earlier)
+export const adjustDisplayTime = (dateTime: string): Date => {
+  const date = new Date(dateTime);
+  date.setHours(date.getHours() - 5);
+  return date;
+};
+
 export interface AppState {
   // State
   currentUser: User | null;
