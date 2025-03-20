@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
@@ -31,14 +30,11 @@ const BookingTable = () => {
   const isAdmin = currentUser?.role === 'admin';
   const isMobile = useIsMobile();
   
-  // Get sorted bookings for the current month
   const bookings = getSortedBookings();
   
-  // Get current date for filtering past bookings
   const now = new Date();
   const today = startOfDay(now);
   
-  // Filter bookings by date (current and future dates only) and zone type if selected
   const filteredBookings = bookings.filter((booking) => {
     const searchLower = searchQuery.toLowerCase();
     const bookingDate = new Date(booking.dateTime);
@@ -48,7 +44,6 @@ const BookingTable = () => {
                            booking.phoneNumber.includes(searchQuery) ||
                            (zone?.name.toLowerCase().includes(searchLower) || false);
     
-    // Filter out past bookings - only show current and future bookings
     const isFutureOrToday = !isBefore(bookingDate, today);
     
     const matchesDate = selectedDate === 'all' || booking.dateTime.split('T')[0] === selectedDate;
@@ -244,6 +239,13 @@ const BookingTable = () => {
                   <p className="text-lg">{selectedBooking.personCount}</p>
                 </div>
               </div>
+              
+              {selectedBooking.endTime && (
+                <div>
+                  <h3 className="font-medium text-muted-foreground">Время окончания</h3>
+                  <p className="text-lg">{selectedBooking.endTime}</p>
+                </div>
+              )}
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>

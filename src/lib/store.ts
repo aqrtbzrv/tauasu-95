@@ -1,11 +1,10 @@
-
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { AppState, Booking, Customer, User, Zone, ZoneType } from './types';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { v4 as uuidv4 } from 'uuid';
-import { format, parseISO, isAfter, isBefore, isEqual } from 'date-fns';
+import { format, parseISO, isAfter, isBefore, isEqual, addHours, subHours } from 'date-fns';
 import * as XLSX from 'xlsx';
 
 // Define our initial zones
@@ -28,10 +27,13 @@ const initialZones: Zone[] = [
   { id: 'tapchane4', name: 'Тапчан 4', type: 'Тапчаны' },
 ];
 
-// Define our users
+// Define our users with updated roles
 const users: User[] = [
-  { username: 'admin', password: 'adminadmin', role: 'admin' },
-  { username: 'person', password: 'personperson', role: 'staff' },
+  { username: 'admin', password: 'adminadmin', role: 'admin', displayName: 'Администратор' },
+  { username: 'callcenter', password: 'callcenter', role: 'admin', displayName: 'Call Center' },
+  { username: 'waiter', password: 'waiterwaiter', role: 'staff', displayName: 'Официант' },
+  { username: 'cookcook', password: 'cook123', role: 'staff', displayName: 'Повар' },
+  { username: 'jako2025', password: 'zhanat2025', role: 'staff', displayName: 'Жанат Молдажан' },
 ];
 
 // Get today's date in ISO format (YYYY-MM-DD)
@@ -99,7 +101,7 @@ export const useStore = create<AppState>()(
         }
       },
 
-      // Fetch bookings from Supabase
+      // Fetch bookings from Supabase with time adjustment
       fetchBookingsFromSupabase: async () => {
         try {
           const { data, error } = await supabase
@@ -113,19 +115,26 @@ export const useStore = create<AppState>()(
           }
           
           if (data) {
-            const formattedBookings: Booking[] = data.map(booking => ({
-              id: booking.id,
-              zoneId: booking.venue,
-              clientName: booking.client_name,
-              rentalCost: booking.rental_price,
-              prepayment: booking.prepayment,
-              personCount: booking.number_of_people,
-              dateTime: booking.date_time,
-              menu: booking.menu || undefined,
-              phoneNumber: booking.phone_number,
-              createdAt: booking.created_at,
-              updatedAt: booking.updated_at
-            }));
+            const formattedBookings: Booking[] = data.map(booking => {
+              // Adjust time by subtracting 5 hours from the display time
+              const originalDateTime = new Date(booking.date_time);
+              const adjustedDateTime = subHours(originalDateTime, 5);
+              
+              return {
+                id: booking.id,
+                zoneId: booking.venue,
+                clientName: booking.client_name,
+                rentalCost: booking.rental_price,
+                prepayment: booking.prepayment,
+                personCount: booking.number_of_people,
+                dateTime: adjustedDateTime.toISOString(),
+                endTime: booking.end_time,
+                menu: booking.menu || undefined,
+                phoneNumber: booking.phone_number,
+                createdAt: booking.created_at,
+                updatedAt: booking.updated_at
+              };
+            });
             
             // Sort bookings by date (from nearest to furthest)
             const sortedBookings = formattedBookings.sort((a, b) => {
@@ -191,7 +200,7 @@ export const useStore = create<AppState>()(
         window.supabaseSubscription = channel;
       },
 
-      // Booking actions
+      // Booking actions with time adjustment for new bookings
       setSelectedZoneType: (zoneType: ZoneType | 'all') => {
         set({ selectedZoneType: zoneType });
       },
@@ -204,7 +213,11 @@ export const useStore = create<AppState>()(
         try {
           const now = new Date().toISOString();
           
-          // First insert into Supabase - don't modify the dateTime value
+          // Adjust time by adding 5 hours before saving to database
+          const bookingDate = new Date(booking.dateTime);
+          const adjustedDateTime = addHours(bookingDate, 5);
+          
+          // First insert into Supabase with adjusted time
           const { data, error } = await supabase
             .from('bookings')
             .insert({
@@ -213,7 +226,8 @@ export const useStore = create<AppState>()(
               rental_price: booking.rentalCost,
               prepayment: booking.prepayment,
               number_of_people: booking.personCount,
-              date_time: booking.dateTime,
+              date_time: adjustedDateTime.toISOString(),
+              end_time: booking.endTime,
               menu: booking.menu,
               phone_number: booking.phoneNumber,
               service_type: get().getZoneById(booking.zoneId)?.type || 'Unknown'
@@ -227,7 +241,10 @@ export const useStore = create<AppState>()(
           }
           
           if (data && data[0]) {
-            // Format the booking for local state
+            // Format the booking for local state with adjusted time (-5 hours for display)
+            const dbDateTime = new Date(data[0].date_time);
+            const displayDateTime = subHours(dbDateTime, 5);
+            
             const newBooking: Booking = {
               id: data[0].id,
               zoneId: data[0].venue,
@@ -235,7 +252,8 @@ export const useStore = create<AppState>()(
               rentalCost: data[0].rental_price,
               prepayment: data[0].prepayment,
               personCount: data[0].number_of_people,
-              dateTime: data[0].date_time,
+              dateTime: displayDateTime.toISOString(),
+              endTime: data[0].end_time,
               menu: data[0].menu || undefined,
               phoneNumber: data[0].phone_number,
               createdAt: data[0].created_at,
@@ -291,7 +309,15 @@ export const useStore = create<AppState>()(
           if (bookingData.rentalCost !== undefined) updateData.rental_price = bookingData.rentalCost;
           if (bookingData.prepayment !== undefined) updateData.prepayment = bookingData.prepayment;
           if (bookingData.personCount !== undefined) updateData.number_of_people = bookingData.personCount;
-          if (bookingData.dateTime) updateData.date_time = bookingData.dateTime;
+          
+          // Adjust dateTime by adding 5 hours before saving to database
+          if (bookingData.dateTime) {
+            const bookingDate = new Date(bookingData.dateTime);
+            const adjustedDateTime = addHours(bookingDate, 5);
+            updateData.date_time = adjustedDateTime.toISOString();
+          }
+          
+          if (bookingData.endTime !== undefined) updateData.end_time = bookingData.endTime;
           if (bookingData.menu !== undefined) updateData.menu = bookingData.menu;
           if (bookingData.phoneNumber) updateData.phone_number = bookingData.phoneNumber;
           
@@ -312,11 +338,22 @@ export const useStore = create<AppState>()(
           
           // Update local state
           set((state) => {
-            const updatedBookings = state.bookings.map((booking) =>
-              booking.id === id
-                ? { ...booking, ...bookingData, updatedAt: updateData.updated_at }
-                : booking
-            );
+            const updatedBookings = state.bookings.map((booking) => {
+              if (booking.id === id) {
+                // Make a copy of the original booking
+                const updatedBooking = { ...booking, ...bookingData, updatedAt: updateData.updated_at };
+                
+                // If we updated dateTime in the database, adjust for display (-5 hours)
+                if (updateData.date_time) {
+                  const dbDateTime = new Date(updateData.date_time);
+                  const displayDateTime = subHours(dbDateTime, 5);
+                  updatedBooking.dateTime = displayDateTime.toISOString();
+                }
+                
+                return updatedBooking;
+              }
+              return booking;
+            });
             
             // Sort bookings by date (from nearest to furthest)
             const sortedBookings = [...updatedBookings].sort((a, b) => {
