@@ -1,11 +1,10 @@
-
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { AppState, Booking, Customer, User, Zone, ZoneType } from './types';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { v4 as uuidv4 } from 'uuid';
-import { format, parseISO, isAfter, isBefore, isEqual } from 'date-fns';
+import { format, parseISO, isAfter, isBefore, isEqual, addHours, subHours } from 'date-fns';
 import * as XLSX from 'xlsx';
 
 // Define our initial zones
@@ -117,10 +116,9 @@ export const useStore = create<AppState>()(
           
           if (data) {
             const formattedBookings: Booking[] = data.map(booking => {
-              // Adjust the display time by subtracting 5 hours
+              // Adjust time by subtracting 5 hours from the display time
               const originalDateTime = new Date(booking.date_time);
-              const adjustedHours = originalDateTime.getHours() - 5;
-              originalDateTime.setHours(adjustedHours);
+              const adjustedDateTime = subHours(originalDateTime, 5);
               
               return {
                 id: booking.id,
@@ -129,7 +127,7 @@ export const useStore = create<AppState>()(
                 rentalCost: booking.rental_price,
                 prepayment: booking.prepayment,
                 personCount: booking.number_of_people,
-                dateTime: originalDateTime.toISOString(),
+                dateTime: adjustedDateTime.toISOString(),
                 endTime: booking.end_time,
                 menu: booking.menu || undefined,
                 phoneNumber: booking.phone_number,
@@ -217,8 +215,7 @@ export const useStore = create<AppState>()(
           
           // Adjust time by adding 5 hours before saving to database
           const bookingDate = new Date(booking.dateTime);
-          const adjustedHours = bookingDate.getHours() + 5;
-          bookingDate.setHours(adjustedHours);
+          const adjustedDateTime = addHours(bookingDate, 5);
           
           // First insert into Supabase with adjusted time
           const { data, error } = await supabase
@@ -229,7 +226,7 @@ export const useStore = create<AppState>()(
               rental_price: booking.rentalCost,
               prepayment: booking.prepayment,
               number_of_people: booking.personCount,
-              date_time: bookingDate.toISOString(),
+              date_time: adjustedDateTime.toISOString(),
               end_time: booking.endTime,
               menu: booking.menu,
               phone_number: booking.phoneNumber,
@@ -245,9 +242,8 @@ export const useStore = create<AppState>()(
           
           if (data && data[0]) {
             // Format the booking for local state with adjusted time (-5 hours for display)
-            const displayDate = new Date(data[0].date_time);
-            const displayHours = displayDate.getHours() - 5;
-            displayDate.setHours(displayHours);
+            const dbDateTime = new Date(data[0].date_time);
+            const displayDateTime = subHours(dbDateTime, 5);
             
             const newBooking: Booking = {
               id: data[0].id,
@@ -256,7 +252,7 @@ export const useStore = create<AppState>()(
               rentalCost: data[0].rental_price,
               prepayment: data[0].prepayment,
               personCount: data[0].number_of_people,
-              dateTime: displayDate.toISOString(),
+              dateTime: displayDateTime.toISOString(),
               endTime: data[0].end_time,
               menu: data[0].menu || undefined,
               phoneNumber: data[0].phone_number,
@@ -317,9 +313,8 @@ export const useStore = create<AppState>()(
           // Adjust dateTime by adding 5 hours before saving to database
           if (bookingData.dateTime) {
             const bookingDate = new Date(bookingData.dateTime);
-            const adjustedHours = bookingDate.getHours() + 5;
-            bookingDate.setHours(adjustedHours);
-            updateData.date_time = bookingDate.toISOString();
+            const adjustedDateTime = addHours(bookingDate, 5);
+            updateData.date_time = adjustedDateTime.toISOString();
           }
           
           if (bookingData.endTime !== undefined) updateData.end_time = bookingData.endTime;
@@ -350,10 +345,9 @@ export const useStore = create<AppState>()(
                 
                 // If we updated dateTime in the database, adjust for display (-5 hours)
                 if (updateData.date_time) {
-                  const displayDate = new Date(updateData.date_time);
-                  const displayHours = displayDate.getHours() - 5;
-                  displayDate.setHours(displayHours);
-                  updatedBooking.dateTime = displayDate.toISOString();
+                  const dbDateTime = new Date(updateData.date_time);
+                  const displayDateTime = subHours(dbDateTime, 5);
+                  updatedBooking.dateTime = displayDateTime.toISOString();
                 }
                 
                 return updatedBooking;
