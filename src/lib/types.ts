@@ -1,3 +1,4 @@
+
 export type UserRole = 'admin' | 'staff';
 
 export interface User {
@@ -14,7 +15,8 @@ export type ZoneType =
   | 'Хан-Шатыр' 
   | 'Летний двор' 
   | 'Террасы' 
-  | 'Тапчаны';
+  | 'Тапчаны'
+  | 'Другое';
 
 export interface Zone {
   id: string;

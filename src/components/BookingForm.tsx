@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useStore } from '@/lib/store';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
@@ -49,8 +48,8 @@ const BookingForm = ({
   const [availableZones, setAvailableZones] = useState<Zone[]>([]);
   const [activeTab, setActiveTab] = useState('zone');
   const [timeOptions, setTimeOptions] = useState<string[]>([]);
+  const [customZoneName, setCustomZoneName] = useState('');
 
-  // Generate time options in 30-minute increments
   useEffect(() => {
     const options = [];
     for (let hour = 0; hour < 24; hour++) {
@@ -65,10 +64,14 @@ const BookingForm = ({
       const bookingDateTime = new Date(currentBooking.dateTime);
       const bookingTime = format(bookingDateTime, 'HH:mm');
       
-      // Calculate end time (default to 2 hours after start time)
       const endDateTime = new Date(bookingDateTime);
       endDateTime.setHours(endDateTime.getHours() + 2);
       const endTime = format(endDateTime, 'HH:mm');
+      
+      const zone = zones.find(z => z.id === currentBooking.zoneId);
+      if (zone && zone.type === 'Другое') {
+        setCustomZoneName(zone.name);
+      }
       
       setFormData({
         ...currentBooking,
@@ -89,6 +92,7 @@ const BookingForm = ({
         menu: '',
         phoneNumber: ''
       });
+      setCustomZoneName('');
       setActiveTab('zone');
     }
   }, [isEditingBooking, currentBooking, selectedDate]);
@@ -141,7 +145,6 @@ const BookingForm = ({
         dateTime: `${datePart}T${time.replace(':', ':')}:00`
       });
       
-      // Automatically set end time to 2 hours after start if end time is before start time
       const startHour = parseInt(time.split(':')[0], 10);
       const startMinute = parseInt(time.split(':')[1], 10);
       const endTime = formData.endTime?.split('T')[1].split(':') || [];
@@ -181,6 +184,10 @@ const BookingForm = ({
       dateTime: `${newDate}T${startTime}`,
       endTime: `${newDate}T${endTime}`
     });
+  };
+
+  const handleCustomZoneNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setCustomZoneName(e.target.value);
   };
 
   const moveToNextTab = () => {
@@ -226,6 +233,23 @@ const BookingForm = ({
       setActiveTab('zone');
       return;
     }
+    
+    let finalZoneId = formData.zoneId;
+    if (formData.zoneId === 'other' && customZoneName) {
+      finalZoneId = `other-${new Date().getTime()}`;
+      
+      const customZone: Zone = {
+        id: finalZoneId,
+        name: customZoneName,
+        type: 'Другое'
+      };
+      
+      useStore.getState().zones.push(customZone);
+    } else if (formData.zoneId === 'other' && !customZoneName) {
+      toast.error('Введите название зоны');
+      return;
+    }
+    
     if (!formData.clientName) {
       toast.error('Введите имя клиента');
       setActiveTab('client');
@@ -242,7 +266,6 @@ const BookingForm = ({
       return;
     }
     
-    // Ensure start time is before end time
     const startDateTime = new Date(formData.dateTime);
     const endDateTime = new Date(formData.endTime || '');
     
@@ -251,7 +274,6 @@ const BookingForm = ({
       return;
     }
     
-    // Ensure numbers are properly handled
     const bookingData = {
       ...formData,
       rentalCost: formData.rentalCost || 0,
@@ -259,13 +281,12 @@ const BookingForm = ({
       personCount: formData.personCount || 1
     };
     
-    // Remove endTime from the data sent to store as it's not part of the Booking type
     const { endTime, ...bookingDataWithoutEndTime } = bookingData;
     
     if (isEditingBooking && currentBooking) {
-      updateBooking(currentBooking.id, bookingDataWithoutEndTime);
+      updateBooking(currentBooking.id, finalBookingData);
     } else {
-      addBooking(bookingDataWithoutEndTime as Omit<Booking, 'id' | 'createdAt' | 'updatedAt'>);
+      addBooking(finalBookingData as Omit<Booking, 'id' | 'createdAt' | 'updatedAt'>);
     }
     onClose();
   };
@@ -331,7 +352,25 @@ const BookingForm = ({
                   </SelectContent>
                 </Select>
                 
-                {formData.zoneId && <div className="mt-4 p-4 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-900">
+                {formData.zoneId === 'other' && (
+                  <div className="mt-4">
+                    <Label htmlFor="customZoneName" className="text-base font-medium">
+                      Введите название зоны
+                    </Label>
+                    <Input 
+                      id="customZoneName" 
+                      name="customZoneName" 
+                      value={customZoneName} 
+                      onChange={handleCustomZoneNameChange} 
+                      placeholder="Введите название зоны" 
+                      className="h-12 mt-2" 
+                      required 
+                      disabled={isDisabled} 
+                    />
+                  </div>
+                )}
+                
+                {formData.zoneId && formData.zoneId !== 'other' && <div className="mt-4 p-4 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-900">
                     <h3 className="font-medium mb-2 text-green-800 dark:text-green-300">
                       Выбранная зона:
                     </h3>

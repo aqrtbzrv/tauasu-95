@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { AppState, Booking, Customer, User, Zone, ZoneType } from './types';
@@ -13,10 +12,10 @@ const initialZones: Zone[] = [
   { id: 'yurt1', name: 'Юрта 1', type: 'Юрты' },
   { id: 'yurt2', name: 'Юрта 2', type: 'Юрты' },
   { id: 'glamping1', name: 'Глэмпинг', type: 'Глэмпинг' },
-  { id: 'gazebo1', name: 'Беседка 1', type: 'Беседки' },
   { id: 'gazebo2', name: 'Беседка 2', type: 'Беседки' },
   { id: 'gazebo3', name: 'Беседка 3', type: 'Беседки' },
   { id: 'gazebo4', name: 'Беседка 4', type: 'Беседки' },
+  { id: 'gazebo5', name: 'Беседка 5', type: 'Беседки' },
   { id: 'khanShatyr', name: 'Хан-Шатыр', type: 'Хан-Шатыр' },
   { id: 'summerYard', name: 'Летний двор', type: 'Летний двор' },
   { id: 'terrace1', name: 'Терраса 1', type: 'Террасы' },
@@ -26,6 +25,7 @@ const initialZones: Zone[] = [
   { id: 'tapchane2', name: 'Тапчан 2', type: 'Тапчаны' },
   { id: 'tapchane3', name: 'Тапчан 3', type: 'Тапчаны' },
   { id: 'tapchane4', name: 'Тапчан 4', type: 'Тапчаны' },
+  { id: 'other', name: 'Другое', type: 'Другое' },
 ];
 
 // Define our users

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useStore } from '@/lib/store';
 import AuthForm from '@/components/AuthForm';
@@ -29,7 +28,6 @@ const Index = () => {
   const navigate = useNavigate();
   const isAdmin = currentUser?.role === 'admin';
   
-  // Update current time every minute
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
@@ -44,9 +42,8 @@ const Index = () => {
     }
   }, [currentUser, navigate]);
   
-  // If not logged in and initial render, show loading or redirect
   if (!currentUser) {
-    return null; // Will redirect via useEffect
+    return null;
   }
   
   const handleAddBooking = () => {
@@ -61,7 +58,6 @@ const Index = () => {
     setFormOpen(false);
   };
 
-  // Format the current time
   const formattedTime = format(
     currentTime,
     'dd MMM yyyy HH:mm',
@@ -103,24 +99,20 @@ const Index = () => {
                   <CalendarDaysIcon className="mr-2 h-4 w-4" />
                   <span className="whitespace-nowrap">Календарь</span>
                 </TabsTrigger>
-                {isAdmin && (
-                  <TabsTrigger 
-                    value="customers" 
-                    className="flex items-center py-3 rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm"
-                  >
-                    <UsersIcon className="mr-2 h-4 w-4" />
-                    <span className="whitespace-nowrap">Клиенты</span>
-                  </TabsTrigger>
-                )}
-                {isAdmin && (
-                  <TabsTrigger 
-                    value="analytics" 
-                    className="flex items-center py-3 rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm"
-                  >
-                    <BarChartIcon className="mr-2 h-4 w-4" />
-                    <span className="whitespace-nowrap">Аналитика</span>
-                  </TabsTrigger>
-                )}
+                <TabsTrigger 
+                  value="customers" 
+                  className="flex items-center py-3 rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                >
+                  <UsersIcon className="mr-2 h-4 w-4" />
+                  <span className="whitespace-nowrap">Клиенты</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="analytics" 
+                  className="flex items-center py-3 rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                >
+                  <BarChartIcon className="mr-2 h-4 w-4" />
+                  <span className="whitespace-nowrap">Аналитика</span>
+                </TabsTrigger>
               </TabsList>
             </div>
             
@@ -133,17 +125,13 @@ const Index = () => {
                 <BookingCalendar />
               </TabsContent>
               
-              {isAdmin && (
-                <TabsContent value="customers" className="animate-in fade-in-50 m-0">
-                  <CustomersDatabase />
-                </TabsContent>
-              )}
+              <TabsContent value="customers" className="animate-in fade-in-50 m-0">
+                <CustomersDatabase />
+              </TabsContent>
               
-              {isAdmin && (
-                <TabsContent value="analytics" className="animate-in fade-in-50 m-0">
-                  <AnalyticsView />
-                </TabsContent>
-              )}
+              <TabsContent value="analytics" className="animate-in fade-in-50 m-0">
+                <AnalyticsView />
+              </TabsContent>
             </div>
           </Tabs>
         </div>
