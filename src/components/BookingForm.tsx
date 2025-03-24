@@ -276,6 +276,7 @@ const BookingForm = ({
     
     const bookingData = {
       ...formData,
+      zoneId: finalZoneId,
       rentalCost: formData.rentalCost || 0,
       prepayment: formData.prepayment || 0,
       personCount: formData.personCount || 1
@@ -284,9 +285,9 @@ const BookingForm = ({
     const { endTime, ...bookingDataWithoutEndTime } = bookingData;
     
     if (isEditingBooking && currentBooking) {
-      updateBooking(currentBooking.id, finalBookingData);
+      updateBooking(currentBooking.id, bookingDataWithoutEndTime);
     } else {
-      addBooking(finalBookingData as Omit<Booking, 'id' | 'createdAt' | 'updatedAt'>);
+      addBooking(bookingDataWithoutEndTime as Omit<Booking, 'id' | 'createdAt' | 'updatedAt'>);
     }
     onClose();
   };
