@@ -12,6 +12,8 @@ export type Database = {
       bookings: {
         Row: {
           client_name: string
+          cook_viewed: boolean
+          cook_viewed_at: string | null
           created_at: string
           date_time: string
           id: string
@@ -23,9 +25,13 @@ export type Database = {
           service_type: string
           updated_at: string
           venue: string
+          waiter_viewed: boolean
+          waiter_viewed_at: string | null
         }
         Insert: {
           client_name: string
+          cook_viewed?: boolean
+          cook_viewed_at?: string | null
           created_at?: string
           date_time: string
           id?: string
@@ -37,9 +43,13 @@ export type Database = {
           service_type: string
           updated_at?: string
           venue: string
+          waiter_viewed?: boolean
+          waiter_viewed_at?: string | null
         }
         Update: {
           client_name?: string
+          cook_viewed?: boolean
+          cook_viewed_at?: string | null
           created_at?: string
           date_time?: string
           id?: string
@@ -51,6 +61,8 @@ export type Database = {
           service_type?: string
           updated_at?: string
           venue?: string
+          waiter_viewed?: boolean
+          waiter_viewed_at?: string | null
         }
         Relationships: []
       }
