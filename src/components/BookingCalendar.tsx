@@ -1,10 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import { useStore } from '@/lib/store';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar } from '@/components/ui/calendar';
 import { ru } from 'date-fns/locale';
-import { CalendarIcon, PhoneIcon, XIcon, CheckCircle2Icon, EyeIcon, ClockIcon } from 'lucide-react';
+import { CalendarIcon, PhoneIcon, XIcon, ClockIcon } from 'lucide-react';
 import { format, isToday, parseISO, formatDistanceToNow } from 'date-fns';
 import { Booking, adjustDisplayTime } from '@/lib/types';
 import { 
@@ -19,7 +18,7 @@ import { Button } from '@/components/ui/button';
 import { EditIcon, Trash2Icon } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Badge } from '@/components/ui/badge';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import ViewStatus from '@/components/ViewStatus';
 
 const BookingCalendar = () => {
   const selectedDate = useStore((state) => state.selectedDate);
@@ -32,7 +31,7 @@ const BookingCalendar = () => {
   const currentUser = useStore((state) => state.currentUser);
   const isAdmin = currentUser?.role === 'admin';
   const isWaiter = currentUser?.username === 'waiter';
-  const isCook = currentUser?.username === 'cookcook';
+  const isCook = currentUser?.username === 'cook';
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const isMobile = useIsMobile();
 
@@ -220,37 +219,17 @@ const BookingCalendar = () => {
                       
                       <div className="flex justify-between items-center pt-2 border-t mt-2">
                         <div className="flex gap-1">
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Badge variant={booking.waiterViewed ? "outline" : "destructive"} className="flex items-center gap-1">
-                                  {booking.waiterViewed ? <CheckCircle2Icon className="h-3 w-3" /> : <EyeIcon className="h-3 w-3" />}
-                                  Официант
-                                </Badge>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                {booking.waiterViewed 
-                                  ? `Просмотрено ${formatTimeAgo(booking.waiterViewedAt)}` 
-                                  : "Не просмотрено официантом"}
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
+                          <ViewStatus 
+                            isViewed={booking.waiterViewed} 
+                            viewedAt={booking.waiterViewedAt} 
+                            label="Официант"
+                          />
                           
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Badge variant={booking.cookViewed ? "outline" : "destructive"} className="flex items-center gap-1">
-                                  {booking.cookViewed ? <CheckCircle2Icon className="h-3 w-3" /> : <EyeIcon className="h-3 w-3" />}
-                                  Повар
-                                </Badge>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                {booking.cookViewed 
-                                  ? `Просмотрено ${formatTimeAgo(booking.cookViewedAt)}` 
-                                  : "Не просмотрено поваром"}
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
+                          <ViewStatus 
+                            isViewed={booking.cookViewed} 
+                            viewedAt={booking.cookViewedAt} 
+                            label="Повар"
+                          />
                         </div>
                       </div>
                     </div>
@@ -353,93 +332,109 @@ const BookingCalendar = () => {
               <div className="mt-2 border-t pt-4">
                 <h3 className="font-medium text-muted-foreground mb-2">Статус просмотра</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="flex items-center gap-2 p-3 border rounded-md">
-                    <div className="flex-1">
-                      <h4 className="text-sm font-medium flex items-center gap-1.5">
-                        {selectedBooking.waiterViewed 
-                          ? <CheckCircle2Icon className="h-4 w-4 text-green-500" /> 
-                          : <EyeIcon className="h-4 w-4 text-amber-500" />}
-                        Официант
+                  <div className="flex flex-col p-3 border rounded-md bg-card">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="text-sm font-medium">
+                        <ViewStatus 
+                          isViewed={selectedBooking.waiterViewed} 
+                          viewedAt={selectedBooking.waiterViewedAt} 
+                          label="Официант"
+                          showLabel={true}
+                          className="px-3 py-1"
+                        />
                       </h4>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {selectedBooking.waiterViewed 
-                          ? <span className="flex items-center gap-1">
-                              <ClockIcon className="h-3 w-3" />
-                              {formatTimeAgo(selectedBooking.waiterViewedAt)}
-                            </span> 
-                          : "Не просмотрено"}
-                      </p>
+                      
+                      {!selectedBooking.waiterViewed && (
+                        <div className="flex flex-wrap gap-2">
+                          {isWaiter && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-8 text-xs font-medium"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleMarkAsViewed(selectedBooking.id, 'waiter');
+                              }}
+                            >
+                              Отметить
+                            </Button>
+                          )}
+                          
+                          {isAdmin && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-8 text-xs font-medium"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleMarkAsViewed(selectedBooking.id, 'waiter');
+                              }}
+                            >
+                              Отметить как админ
+                            </Button>
+                          )}
+                        </div>
+                      )}
                     </div>
                     
-                    {isWaiter && !selectedBooking.waiterViewed && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleMarkAsViewed(selectedBooking.id, 'waiter');
-                        }}
-                      >
-                        Отметить
-                      </Button>
-                    )}
-                    
-                    {isAdmin && !selectedBooking.waiterViewed && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleMarkAsViewed(selectedBooking.id, 'waiter');
-                        }}
-                      >
-                        Отметить за официанта
-                      </Button>
+                    {selectedBooking.waiterViewed && selectedBooking.waiterViewedAt && (
+                      <p className="text-xs text-muted-foreground flex items-center gap-1">
+                        <ClockIcon className="h-3 w-3" />
+                        {formatTimeAgo(selectedBooking.waiterViewedAt)}
+                      </p>
                     )}
                   </div>
                   
-                  <div className="flex items-center gap-2 p-3 border rounded-md">
-                    <div className="flex-1">
-                      <h4 className="text-sm font-medium flex items-center gap-1.5">
-                        {selectedBooking.cookViewed 
-                          ? <CheckCircle2Icon className="h-4 w-4 text-green-500" /> 
-                          : <EyeIcon className="h-4 w-4 text-amber-500" />}
-                        Повар
+                  <div className="flex flex-col p-3 border rounded-md bg-card">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="text-sm font-medium">
+                        <ViewStatus 
+                          isViewed={selectedBooking.cookViewed} 
+                          viewedAt={selectedBooking.cookViewedAt} 
+                          label="Повар"
+                          showLabel={true}
+                          className="px-3 py-1"
+                        />
                       </h4>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {selectedBooking.cookViewed 
-                          ? <span className="flex items-center gap-1">
-                              <ClockIcon className="h-3 w-3" />
-                              {formatTimeAgo(selectedBooking.cookViewedAt)}
-                            </span> 
-                          : "Не просмотрено"}
-                      </p>
+                      
+                      {!selectedBooking.cookViewed && (
+                        <div className="flex flex-wrap gap-2">
+                          {isCook && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-8 text-xs font-medium"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleMarkAsViewed(selectedBooking.id, 'cook');
+                              }}
+                            >
+                              Отметить
+                            </Button>
+                          )}
+                          
+                          {isAdmin && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-8 text-xs font-medium"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleMarkAsViewed(selectedBooking.id, 'cook');
+                              }}
+                            >
+                              Отметить как админ
+                            </Button>
+                          )}
+                        </div>
+                      )}
                     </div>
                     
-                    {isCook && !selectedBooking.cookViewed && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleMarkAsViewed(selectedBooking.id, 'cook');
-                        }}
-                      >
-                        Отметить
-                      </Button>
-                    )}
-                    
-                    {isAdmin && !selectedBooking.cookViewed && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleMarkAsViewed(selectedBooking.id, 'cook');
-                        }}
-                      >
-                        Отметить за повара
-                      </Button>
+                    {selectedBooking.cookViewed && selectedBooking.cookViewedAt && (
+                      <p className="text-xs text-muted-foreground flex items-center gap-1">
+                        <ClockIcon className="h-3 w-3" />
+                        {formatTimeAgo(selectedBooking.cookViewedAt)}
+                      </p>
                     )}
                   </div>
                 </div>

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
@@ -12,11 +11,12 @@ import {
   DialogTitle,
   DialogFooter
 } from '@/components/ui/dialog';
-import { EditIcon, SearchIcon, Trash2Icon, PhoneIcon, XIcon } from 'lucide-react';
+import { EditIcon, SearchIcon, Trash2Icon, PhoneIcon, XIcon, ClockIcon } from 'lucide-react';
 import { format, parseISO, startOfDay, isBefore, isAfter } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { Booking, adjustDisplayTime } from '@/lib/types';
 import { useIsMobile } from '@/hooks/use-mobile';
+import ViewStatus from '@/components/ViewStatus';
 
 const BookingTable = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -30,15 +30,13 @@ const BookingTable = () => {
   const currentUser = useStore((state) => state.currentUser);
   const isAdmin = currentUser?.role === 'admin';
   const isMobile = useIsMobile();
-  
-  // Get sorted bookings for the current month
+  const isWaiter = currentUser?.role === 'waiter';
+  const isCook = currentUser?.role === 'cook';
+
   const bookings = getSortedBookings();
-  
-  // Get current date for filtering past bookings
   const now = new Date();
   const today = startOfDay(now);
-  
-  // Filter bookings by date (current and future dates only) and zone type if selected
+
   const filteredBookings = bookings.filter((booking) => {
     const searchLower = searchQuery.toLowerCase();
     const bookingDate = new Date(booking.dateTime);
@@ -48,7 +46,6 @@ const BookingTable = () => {
                            booking.phoneNumber.includes(searchQuery) ||
                            (zone?.name.toLowerCase().includes(searchLower) || false);
     
-    // Filter out past bookings - only show current and future bookings
     const isFutureOrToday = !isBefore(bookingDate, today);
     
     const matchesDate = selectedDate === 'all' || booking.dateTime.split('T')[0] === selectedDate;
@@ -94,6 +91,10 @@ const BookingTable = () => {
     window.open(`https://wa.me/${formattedNumber}`, '_blank');
   };
 
+  const handleMarkAsViewed = async (id: string, role: 'waiter' | 'cook') => {
+    await markAsViewed(id, role);
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row items-center gap-2">
@@ -120,6 +121,7 @@ const BookingTable = () => {
                 <TableHead>Дата и время</TableHead>
                 <TableHead className="hidden md:table-cell">Стоимость</TableHead>
                 <TableHead className="hidden lg:table-cell">Предоплата</TableHead>
+                <TableHead className="hidden lg:table-cell">Статус</TableHead>
                 {isAdmin && <TableHead className="text-right">Действия</TableHead>}
               </TableRow>
             </TableHeader>
@@ -152,6 +154,24 @@ const BookingTable = () => {
                       <TableCell>{formatDate(booking.dateTime)}</TableCell>
                       <TableCell className="hidden md:table-cell">{formatMoney(booking.rentalCost)}</TableCell>
                       <TableCell className="hidden lg:table-cell">{formatMoney(booking.prepayment)}</TableCell>
+                      <TableCell className="hidden lg:table-cell">
+                        <div className="flex items-center gap-1">
+                          <ViewStatus 
+                            isViewed={booking.waiterViewed} 
+                            viewedAt={booking.waiterViewedAt}
+                            label="О"
+                            showLabel={false}
+                            compact={true}
+                          />
+                          <ViewStatus 
+                            isViewed={booking.cookViewed} 
+                            viewedAt={booking.cookViewedAt}
+                            label="П"
+                            showLabel={false}
+                            compact={true}
+                          />
+                        </div>
+                      </TableCell>
                       {isAdmin && (
                         <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                           <div className="flex justify-end space-x-2">
@@ -169,7 +189,7 @@ const BookingTable = () => {
                 })
               ) : (
                 <TableRow>
-                  <TableCell colSpan={isAdmin ? 8 : 7} className="text-center h-24">
+                  <TableCell colSpan={isAdmin ? 9 : 8} className="text-center h-24">
                     Нет доступных бронирований
                   </TableCell>
                 </TableRow>
@@ -262,6 +282,117 @@ const BookingTable = () => {
                   <p className="text-lg whitespace-pre-line">{selectedBooking.menu}</p>
                 </div>
               )}
+
+              <div className="mt-2 border-t pt-4">
+                <h3 className="font-medium text-muted-foreground mb-2">Статус просмотра</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="flex flex-col p-3 border rounded-md bg-card">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="text-sm font-medium">
+                        <ViewStatus 
+                          isViewed={selectedBooking.waiterViewed} 
+                          viewedAt={selectedBooking.waiterViewedAt} 
+                          label="Официант"
+                          showLabel={true}
+                          className="px-3 py-1"
+                        />
+                      </h4>
+                      
+                      {!selectedBooking.waiterViewed && (
+                        <div className="flex flex-wrap gap-2">
+                          {isWaiter && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-8 text-xs font-medium"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleMarkAsViewed(selectedBooking.id, 'waiter');
+                              }}
+                            >
+                              Отметить
+                            </Button>
+                          )}
+                          
+                          {isAdmin && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-8 text-xs font-medium"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleMarkAsViewed(selectedBooking.id, 'waiter');
+                              }}
+                            >
+                              Отметить как админ
+                            </Button>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    
+                    {selectedBooking.waiterViewed && selectedBooking.waiterViewedAt && (
+                      <p className="text-xs text-muted-foreground flex items-center gap-1">
+                        <ClockIcon className="h-3 w-3" />
+                        {formatTimeAgo(selectedBooking.waiterViewedAt)}
+                      </p>
+                    )}
+                  </div>
+                  
+                  <div className="flex flex-col p-3 border rounded-md bg-card">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="text-sm font-medium">
+                        <ViewStatus 
+                          isViewed={selectedBooking.cookViewed} 
+                          viewedAt={selectedBooking.cookViewedAt} 
+                          label="Повар"
+                          showLabel={true}
+                          className="px-3 py-1"
+                        />
+                      </h4>
+                      
+                      {!selectedBooking.cookViewed && (
+                        <div className="flex flex-wrap gap-2">
+                          {isCook && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-8 text-xs font-medium"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleMarkAsViewed(selectedBooking.id, 'cook');
+                              }}
+                            >
+                              Отметить
+                            </Button>
+                          )}
+                          
+                          {isAdmin && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-8 text-xs font-medium"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleMarkAsViewed(selectedBooking.id, 'cook');
+                              }}
+                            >
+                              Отметить как админ
+                            </Button>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    
+                    {selectedBooking.cookViewed && selectedBooking.cookViewedAt && (
+                      <p className="text-xs text-muted-foreground flex items-center gap-1">
+                        <ClockIcon className="h-3 w-3" />
+                        {formatTimeAgo(selectedBooking.cookViewedAt)}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
