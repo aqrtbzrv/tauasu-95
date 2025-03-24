@@ -1,3 +1,4 @@
+
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { AppState, Booking, Customer, User, Zone, ZoneType } from './types';
@@ -35,6 +36,8 @@ const users: User[] = [
   { username: 'waiter', password: 'waiterwaiter', role: 'staff', displayName: 'Официант' },
   { username: 'cookcook', password: 'cook123', role: 'staff', displayName: 'Повар' },
   { username: 'jako2025', password: 'zhanat2025', role: 'staff', displayName: 'Жанат Молдажан' },
+  { username: 'miras2025', password: 'mirasadmin', role: 'admin', displayName: 'Мирас Болатбаев' },
+  { username: 'qurmet2025', password: 'qurmetadmin', role: 'admin', displayName: 'Құрмет Болатбаев' },
 ];
 
 // Get today's date in ISO format (YYYY-MM-DD)

@@ -12,19 +12,27 @@ import { toast } from 'sonner';
 const AuthForm = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const login = useStore((state) => state.login);
   const navigate = useNavigate();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const success = login(username, password);
-    if (success) {
-      navigate('/');
-    }
+    setIsLoading(true);
+    
+    setTimeout(() => {
+      const success = login(username, password);
+      if (success) {
+        navigate('/');
+        toast.success(`Добро пожаловать, ${username}!`);
+      } else {
+        setIsLoading(false);
+      }
+    }, 800); // Short delay for better UX
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-4">
+    <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-gradient-to-b from-background to-muted/30">
       <Card className="w-full max-w-md mx-auto animate-scale-in glass-card">
         <CardHeader className="space-y-2 flex flex-col items-center">
           <img 
@@ -52,6 +60,7 @@ const AuthForm = () => {
                   onChange={(e) => setUsername(e.target.value)}
                   className="pl-10"
                   required
+                  autoComplete="username"
                 />
               </div>
             </div>
@@ -65,13 +74,14 @@ const AuthForm = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   className="pl-10"
                   required
+                  autoComplete="current-password"
                 />
               </div>
             </div>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
-            <Button type="submit" className="w-full">
-              Войти
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? 'Вход...' : 'Войти'}
             </Button>
             <div className="text-xs text-muted-foreground text-center w-full mt-6">
               © Все права защищены <span className="opacity-70">@asqartbzrv</span>
