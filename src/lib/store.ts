@@ -132,8 +132,8 @@ export const useStore = create<AppState>()(
               updatedAt: booking.updated_at,
               waiterViewed: booking.waiter_viewed || false,
               cookViewed: booking.cook_viewed || false,
-              waiterViewedAt: booking.waiter_viewed_at,
-              cookViewedAt: booking.cook_viewed_at
+              waiterViewedAt: booking.waiter_viewed_at || undefined,
+              cookViewedAt: booking.cook_viewed_at || undefined
             }));
             
             // Sort bookings by date (from nearest to furthest)
@@ -253,8 +253,8 @@ export const useStore = create<AppState>()(
               updatedAt: data[0].updated_at,
               waiterViewed: data[0].waiter_viewed || false,
               cookViewed: data[0].cook_viewed || false,
-              waiterViewedAt: data[0].waiter_viewed_at,
-              cookViewedAt: data[0].cook_viewed_at
+              waiterViewedAt: data[0].waiter_viewed_at || undefined,
+              cookViewedAt: data[0].cook_viewed_at || undefined
             };
             
             // Update local state
