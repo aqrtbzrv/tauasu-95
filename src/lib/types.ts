@@ -36,6 +36,10 @@ export interface Booking {
   phoneNumber: string;
   createdAt: string;
   updatedAt: string;
+  waiterViewed: boolean;
+  cookViewed: boolean;
+  waiterViewedAt?: string;
+  cookViewedAt?: string;
 }
 
 export interface Customer {
@@ -79,10 +83,11 @@ export interface AppState {
   // Booking actions
   setSelectedZoneType: (zoneType: ZoneType | 'all') => void;
   setSelectedDate: (date: string) => void;
-  addBooking: (booking: Omit<Booking, 'id' | 'createdAt' | 'updatedAt'>) => void;
+  addBooking: (booking: Omit<Booking, 'id' | 'createdAt' | 'updatedAt' | 'waiterViewed' | 'cookViewed' | 'waiterViewedAt' | 'cookViewedAt'>) => void;
   updateBooking: (id: string, bookingData: Partial<Booking>) => void;
   deleteBooking: (id: string) => void;
   editBooking: (booking: Booking | null) => void;
+  markAsViewed: (id: string, role: 'waiter' | 'cook') => Promise<void>;
   
   // Customer actions
   getCustomers: () => Customer[];

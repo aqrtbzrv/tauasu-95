@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { AppState, Booking, Customer, User, Zone, ZoneType } from './types';
@@ -130,7 +129,11 @@ export const useStore = create<AppState>()(
               menu: booking.menu || undefined,
               phoneNumber: booking.phone_number,
               createdAt: booking.created_at,
-              updatedAt: booking.updated_at
+              updatedAt: booking.updated_at,
+              waiterViewed: booking.waiter_viewed || false,
+              cookViewed: booking.cook_viewed || false,
+              waiterViewedAt: booking.waiter_viewed_at,
+              cookViewedAt: booking.cook_viewed_at
             }));
             
             // Sort bookings by date (from nearest to furthest)
@@ -206,7 +209,7 @@ export const useStore = create<AppState>()(
         set({ selectedDate: date });
       },
       
-      addBooking: async (booking: Omit<Booking, 'id' | 'createdAt' | 'updatedAt'>) => {
+      addBooking: async (booking: Omit<Booking, 'id' | 'createdAt' | 'updatedAt' | 'waiterViewed' | 'cookViewed' | 'waiterViewedAt' | 'cookViewedAt'>) => {
         try {
           const now = new Date().toISOString();
           
@@ -222,7 +225,9 @@ export const useStore = create<AppState>()(
               date_time: booking.dateTime,
               menu: booking.menu,
               phone_number: booking.phoneNumber,
-              service_type: get().getZoneById(booking.zoneId)?.type || 'Unknown'
+              service_type: get().getZoneById(booking.zoneId)?.type || 'Unknown',
+              waiter_viewed: false,
+              cook_viewed: false
             })
             .select();
             
@@ -245,7 +250,11 @@ export const useStore = create<AppState>()(
               menu: data[0].menu || undefined,
               phoneNumber: data[0].phone_number,
               createdAt: data[0].created_at,
-              updatedAt: data[0].updated_at
+              updatedAt: data[0].updated_at,
+              waiterViewed: data[0].waiter_viewed || false,
+              cookViewed: data[0].cook_viewed || false,
+              waiterViewedAt: data[0].waiter_viewed_at,
+              cookViewedAt: data[0].cook_viewed_at
             };
             
             // Update local state
@@ -300,6 +309,10 @@ export const useStore = create<AppState>()(
           if (bookingData.dateTime) updateData.date_time = bookingData.dateTime;
           if (bookingData.menu !== undefined) updateData.menu = bookingData.menu;
           if (bookingData.phoneNumber) updateData.phone_number = bookingData.phoneNumber;
+          if (bookingData.waiterViewed !== undefined) updateData.waiter_viewed = bookingData.waiterViewed;
+          if (bookingData.cookViewed !== undefined) updateData.cook_viewed = bookingData.cookViewed;
+          if (bookingData.waiterViewedAt !== undefined) updateData.waiter_viewed_at = bookingData.waiterViewedAt;
+          if (bookingData.cookViewedAt !== undefined) updateData.cook_viewed_at = bookingData.cookViewedAt;
           
           // Set update timestamp
           updateData.updated_at = new Date().toISOString();
@@ -373,6 +386,63 @@ export const useStore = create<AppState>()(
         } catch (error) {
           console.error('Error updating booking:', error);
           toast.error('Ошибка при обновлении бронирования');
+        }
+      },
+      
+      markAsViewed: async (id: string, role: 'waiter' | 'cook') => {
+        try {
+          const now = new Date().toISOString();
+          const updateData: any = {
+            updated_at: now
+          };
+          
+          if (role === 'waiter') {
+            updateData.waiter_viewed = true;
+            updateData.waiter_viewed_at = now;
+          } else if (role === 'cook') {
+            updateData.cook_viewed = true;
+            updateData.cook_viewed_at = now;
+          }
+          
+          // Update in Supabase
+          const { error } = await supabase
+            .from('bookings')
+            .update(updateData)
+            .eq('id', id);
+            
+          if (error) {
+            console.error(`Error marking booking as viewed by ${role}:`, error);
+            toast.error(`Ошибка при отметке просмотра бронирования`);
+            return;
+          }
+          
+          // Update local state
+          set((state) => {
+            const updatedBookings = state.bookings.map((booking) => {
+              if (booking.id === id) {
+                const updatedBooking = { ...booking };
+                
+                if (role === 'waiter') {
+                  updatedBooking.waiterViewed = true;
+                  updatedBooking.waiterViewedAt = now;
+                } else if (role === 'cook') {
+                  updatedBooking.cookViewed = true;
+                  updatedBooking.cookViewedAt = now;
+                }
+                
+                updatedBooking.updatedAt = now;
+                return updatedBooking;
+              }
+              return booking;
+            });
+            
+            return { bookings: updatedBookings };
+          });
+          
+          toast.success(`Бронирование отмечено как просмотренное ${role === 'waiter' ? 'официантом' : 'поваром'}`);
+        } catch (error) {
+          console.error(`Error marking booking as viewed by ${role}:`, error);
+          toast.error(`Ошибка при отметке просмотра бронирования`);
         }
       },
       
