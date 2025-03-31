@@ -12,7 +12,7 @@ import {
   DialogFooter
 } from '@/components/ui/dialog';
 import { EditIcon, SearchIcon, Trash2Icon, PhoneIcon, XIcon, ClockIcon } from 'lucide-react';
-import { format, parseISO, startOfDay, isBefore, isAfter } from 'date-fns';
+import { format, parseISO, startOfDay, isBefore, isAfter, formatDistanceToNow } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { Booking, adjustDisplayTime } from '@/lib/types';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -28,10 +28,12 @@ const BookingTable = () => {
   const selectedDate = useStore((state) => state.selectedDate);
   const selectedZoneType = useStore((state) => state.selectedZoneType);
   const currentUser = useStore((state) => state.currentUser);
+  const markAsViewed = useStore((state) => state.markAsViewed);
   const isAdmin = currentUser?.role === 'admin';
   const isMobile = useIsMobile();
-  const isWaiter = currentUser?.role === 'waiter';
-  const isCook = currentUser?.role === 'cook';
+  
+  const isWaiter = currentUser?.displayName === 'Официант';
+  const isCook = currentUser?.displayName === 'Повар';
 
   const bookings = getSortedBookings();
   const now = new Date();
@@ -57,6 +59,11 @@ const BookingTable = () => {
   const formatDate = (dateTime: string) => {
     const date = adjustDisplayTime(dateTime);
     return format(date, 'dd.MM.yyyy HH:mm', { locale: ru });
+  };
+
+  const formatTimeAgo = (dateTime?: string) => {
+    if (!dateTime) return '';
+    return formatDistanceToNow(new Date(dateTime), { addSuffix: true, locale: ru });
   };
 
   const formatMoney = (amount: number) => {
