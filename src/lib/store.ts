@@ -261,7 +261,9 @@ export const useStore = create<AppState>()(
               phone_number: booking.phoneNumber,
               service_type: get().getZoneById(booking.zoneId)?.type || 'Unknown',
               waiter_viewed: false,
-              cook_viewed: false
+              cook_viewed: false,
+              closed: false,
+              created_by: currentUser?.username
             })
             .select();
             
@@ -289,10 +291,10 @@ export const useStore = create<AppState>()(
               cookViewed: data[0].cook_viewed ?? false,
               waiterViewedAt: data[0].waiter_viewed_at ?? undefined,
               cookViewedAt: data[0].cook_viewed_at ?? undefined,
-              closed: false,
-              closedBy: undefined,
-              closedAt: undefined,
-              createdBy: currentUser?.username
+              closed: data[0].closed ?? false,
+              closedBy: data[0].closed_by ?? undefined,
+              closedAt: data[0].closed_at ?? undefined,
+              createdBy: data[0].created_by ?? currentUser?.username
             };
             
             // Create notifications for all users except the one who created the booking
@@ -369,6 +371,9 @@ export const useStore = create<AppState>()(
           if (bookingData.cookViewed !== undefined) updateData.cook_viewed = bookingData.cookViewed;
           if (bookingData.waiterViewedAt !== undefined) updateData.waiter_viewed_at = bookingData.waiterViewedAt;
           if (bookingData.cookViewedAt !== undefined) updateData.cook_viewed_at = bookingData.cookViewedAt;
+          if (bookingData.closed !== undefined) updateData.closed = bookingData.closed;
+          if (bookingData.closedBy !== undefined) updateData.closed_by = bookingData.closedBy;
+          if (bookingData.closedAt !== undefined) updateData.closed_at = bookingData.closedAt;
           
           // Set update timestamp
           updateData.updated_at = new Date().toISOString();
@@ -605,28 +610,26 @@ export const useStore = create<AppState>()(
             }));
             
             remainingBookings.forEach(booking => {
-              const existingCustomer = customersMap.get(booking.phoneNumber);
-              if (existingCustomer) {
-                const lastBookingDate = existingCustomer.lastBooking ? 
-                  (isAfter(new Date(booking.dateTime), new Date(existingCustomer.lastBooking)) ? 
-                    booking.dateTime : existingCustomer.lastBooking) : 
-                  booking.dateTime;
-                
-                customersMap.set(booking.phoneNumber, {
-                  ...existingCustomer,
-                  bookingsCount: existingCustomer.bookingsCount + 1,
-                  lastBooking: lastBookingDate
-                });
-              } else {
-                customersMap.set(booking.phoneNumber, {
-                  id: booking.phoneNumber,
-                  name: booking.clientName,
-                  phoneNumber: booking.phoneNumber,
-                  notes: '',
-                  bookingsCount: 1,
-                  lastBooking: booking.dateTime
-                });
-              }
+              const existingCustomer = customersMap.get(booking.phoneNumber) || {
+                id: booking.phoneNumber,
+                name: booking.clientName,
+                phoneNumber: booking.phoneNumber,
+                notes: '',
+                bookingsCount: 0,
+                lastBooking: booking.dateTime
+              };
+              
+              const lastBookingDate = existingCustomer.lastBooking ? 
+                (isAfter(new Date(booking.dateTime), new Date(existingCustomer.lastBooking)) ? 
+                  booking.dateTime : existingCustomer.lastBooking) : 
+                booking.dateTime;
+              
+              customersMap.set(booking.phoneNumber, {
+                ...existingCustomer,
+                name: booking.clientName,
+                bookingsCount: existingCustomer.bookingsCount + 1,
+                lastBooking: lastBookingDate
+              });
             });
             
             // Remove customer if no bookings left

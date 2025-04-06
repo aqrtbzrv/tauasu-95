@@ -12,9 +12,13 @@ export type Database = {
       bookings: {
         Row: {
           client_name: string
+          closed: boolean | null
+          closed_at: string | null
+          closed_by: string | null
           cook_viewed: boolean
           cook_viewed_at: string | null
           created_at: string
+          created_by: string | null
           date_time: string
           id: string
           menu: string | null
@@ -30,9 +34,13 @@ export type Database = {
         }
         Insert: {
           client_name: string
+          closed?: boolean | null
+          closed_at?: string | null
+          closed_by?: string | null
           cook_viewed?: boolean
           cook_viewed_at?: string | null
           created_at?: string
+          created_by?: string | null
           date_time: string
           id?: string
           menu?: string | null
@@ -48,9 +56,13 @@ export type Database = {
         }
         Update: {
           client_name?: string
+          closed?: boolean | null
+          closed_at?: string | null
+          closed_by?: string | null
           cook_viewed?: boolean
           cook_viewed_at?: string | null
           created_at?: string
+          created_by?: string | null
           date_time?: string
           id?: string
           menu?: string | null

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useStore } from '@/lib/store';
 import AuthForm from '@/components/AuthForm';
@@ -66,11 +67,12 @@ const Index = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Header currentTime={formattedTime} />
+      <Header />
       
       <main className="flex-1 container mx-auto px-4 py-6">
         <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <h1 className="text-2xl font-bold">Управление бронированиями</h1>
+          <div className="text-sm text-muted-foreground mb-2">{formattedTime}</div>
           {isAdmin && (
             <Button onClick={handleAddBooking} className="shrink-0">
               <PlusIcon className="mr-2 h-4 w-4" />
