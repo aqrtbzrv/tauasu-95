@@ -12,7 +12,7 @@ import { Booking, Zone } from '@/lib/types';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
-import { Users, Calendar, Home, Phone, DollarSign, Clock, UtensilsCrossed, LockClosedIcon } from 'lucide-react';
+import { Users, Calendar, Home, Phone, DollarSign, Clock, UtensilsCrossed, Lock } from 'lucide-react';
 
 interface BookingFormProps {
   isOpen: boolean;
@@ -328,7 +328,7 @@ const BookingForm = ({
         
         {isBookingClosed && (
           <div className="mb-4 p-3 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg flex items-center gap-2">
-            <LockClosedIcon className="h-5 w-5 text-gray-500" />
+            <Lock className="h-5 w-5 text-gray-500" />
             <div>
               <div className="font-medium">Бронирование закрыто</div>
               {currentBooking?.closedBy && currentBooking?.closedAt && (
@@ -600,7 +600,7 @@ const BookingForm = ({
                       onClick={handleCloseBooking}
                       className="bg-gray-600 hover:bg-gray-700 text-white"
                     >
-                      <LockClosedIcon className="h-4 w-4 mr-2" />
+                      <Lock className="h-4 w-4 mr-2" />
                       Закрыть бронь
                     </Button>
                   )}

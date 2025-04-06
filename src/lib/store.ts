@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { AppState, Booking, Customer, Notification, User, Zone, ZoneType } from './types';
@@ -262,9 +261,7 @@ export const useStore = create<AppState>()(
               phone_number: booking.phoneNumber,
               service_type: get().getZoneById(booking.zoneId)?.type || 'Unknown',
               waiter_viewed: false,
-              cook_viewed: false,
-              closed: false,
-              created_by: currentUser?.username || 'unknown'
+              cook_viewed: false
             })
             .select();
             
@@ -292,10 +289,10 @@ export const useStore = create<AppState>()(
               cookViewed: data[0].cook_viewed ?? false,
               waiterViewedAt: data[0].waiter_viewed_at ?? undefined,
               cookViewedAt: data[0].cook_viewed_at ?? undefined,
-              closed: data[0].closed ?? false,
-              closedBy: data[0].closed_by ?? undefined,
-              closedAt: data[0].closed_at ?? undefined,
-              createdBy: data[0].created_by ?? currentUser?.username
+              closed: false,
+              closedBy: undefined,
+              closedAt: undefined,
+              createdBy: currentUser?.username
             };
             
             // Create notifications for all users except the one who created the booking
@@ -372,9 +369,6 @@ export const useStore = create<AppState>()(
           if (bookingData.cookViewed !== undefined) updateData.cook_viewed = bookingData.cookViewed;
           if (bookingData.waiterViewedAt !== undefined) updateData.waiter_viewed_at = bookingData.waiterViewedAt;
           if (bookingData.cookViewedAt !== undefined) updateData.cook_viewed_at = bookingData.cookViewedAt;
-          if (bookingData.closed !== undefined) updateData.closed = bookingData.closed;
-          if (bookingData.closedBy !== undefined) updateData.closed_by = bookingData.closedBy;
-          if (bookingData.closedAt !== undefined) updateData.closed_at = bookingData.closedAt;
           
           // Set update timestamp
           updateData.updated_at = new Date().toISOString();

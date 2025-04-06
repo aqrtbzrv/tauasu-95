@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2Icon, EyeIcon, ClockIcon, LockIcon } from 'lucide-react';
+import { CheckCircle2Icon, EyeIcon, ClockIcon, Lock } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { formatDistanceToNow } from 'date-fns';
 import { ru } from 'date-fns/locale';
@@ -42,7 +42,7 @@ const ViewStatus = ({
           <Tooltip>
             <TooltipTrigger asChild>
               <div className={`inline-flex items-center ${className}`}>
-                <LockIcon className="h-4 w-4 text-gray-500" />
+                <Lock className="h-4 w-4 text-gray-500" />
               </div>
             </TooltipTrigger>
             <TooltipContent>
@@ -61,7 +61,7 @@ const ViewStatus = ({
               variant="outline" 
               className={`flex items-center gap-1 ${className} bg-gray-50 text-gray-700 hover:bg-gray-100 dark:bg-gray-900/20 dark:text-gray-400 dark:hover:bg-gray-900/30`}
             >
-              <LockIcon className="h-3 w-3" /> 
+              <Lock className="h-3 w-3" /> 
               {showLabel ? "Закрыто" : null}
             </Badge>
           </TooltipTrigger>
