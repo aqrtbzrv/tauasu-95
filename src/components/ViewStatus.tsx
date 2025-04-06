@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2Icon, EyeIcon, ClockIcon } from 'lucide-react';
+import { CheckCircle2Icon, EyeIcon, ClockIcon, LockIcon } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { formatDistanceToNow } from 'date-fns';
 import { ru } from 'date-fns/locale';
@@ -13,6 +13,9 @@ interface ViewStatusProps {
   className?: string;
   showLabel?: boolean;
   compact?: boolean;
+  isClosed?: boolean;
+  closedAt?: string;
+  closedBy?: string;
 }
 
 const ViewStatus = ({ 
@@ -21,12 +24,57 @@ const ViewStatus = ({
   label, 
   className = "", 
   showLabel = true, 
-  compact = false 
+  compact = false,
+  isClosed = false,
+  closedAt,
+  closedBy
 }: ViewStatusProps) => {
   const formatTimeAgo = (dateTime?: string) => {
     if (!dateTime) return '';
     return formatDistanceToNow(new Date(dateTime), { addSuffix: true, locale: ru });
   };
+
+  // If booking is closed, show that instead of view status
+  if (isClosed) {
+    if (compact) {
+      return (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className={`inline-flex items-center ${className}`}>
+                <LockIcon className="h-4 w-4 text-gray-500" />
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              {`Закрыто ${closedBy ? `пользователем ${closedBy}` : ''} ${formatTimeAgo(closedAt)}`}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      );
+    }
+
+    return (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Badge 
+              variant="outline" 
+              className={`flex items-center gap-1 ${className} bg-gray-50 text-gray-700 hover:bg-gray-100 dark:bg-gray-900/20 dark:text-gray-400 dark:hover:bg-gray-900/30`}
+            >
+              <LockIcon className="h-3 w-3" /> 
+              {showLabel ? "Закрыто" : null}
+            </Badge>
+          </TooltipTrigger>
+          <TooltipContent>
+            <span className="flex items-center gap-1">
+              <ClockIcon className="h-3 w-3" />
+              {`Закрыто ${closedBy ? `пользователем ${closedBy}` : ''} ${formatTimeAgo(closedAt)}`}
+            </span>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  }
 
   if (compact) {
     return (

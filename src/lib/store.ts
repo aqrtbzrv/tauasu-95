@@ -1,6 +1,7 @@
+
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { AppState, Booking, Customer, User, Zone, ZoneType } from './types';
+import { AppState, Booking, Customer, Notification, User, Zone, ZoneType } from './types';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { v4 as uuidv4 } from 'uuid';
@@ -51,6 +52,7 @@ export const useStore = create<AppState>()(
       zones: initialZones,
       bookings: [],
       customers: [],
+      notifications: [],
       selectedZoneType: 'all',
       selectedDate: today,
       isEditingBooking: false,
@@ -133,7 +135,11 @@ export const useStore = create<AppState>()(
               waiterViewed: booking.waiter_viewed ?? false,
               cookViewed: booking.cook_viewed ?? false,
               waiterViewedAt: booking.waiter_viewed_at ?? undefined,
-              cookViewedAt: booking.cook_viewed_at ?? undefined
+              cookViewedAt: booking.cook_viewed_at ?? undefined,
+              closed: booking.closed ?? false,
+              closedBy: booking.closed_by ?? undefined,
+              closedAt: booking.closed_at ?? undefined,
+              createdBy: booking.created_by ?? undefined
             }));
             
             // Sort bookings by date (from nearest to furthest)
@@ -200,6 +206,34 @@ export const useStore = create<AppState>()(
         window.supabaseSubscription = channel;
       },
 
+      // Notification actions
+      getNotifications: () => {
+        return get().notifications.filter(notification => 
+          notification.forUsername === get().currentUser?.username || 
+          notification.forUsername === 'all'
+        ).sort((a, b) => 
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+      },
+      
+      markNotificationAsRead: (id: string) => {
+        set(state => ({
+          notifications: state.notifications.map(notification => 
+            notification.id === id ? { ...notification, read: true } : notification
+          )
+        }));
+      },
+      
+      markAllNotificationsAsRead: () => {
+        set(state => ({
+          notifications: state.notifications.map(notification => 
+            notification.forUsername === get().currentUser?.username || notification.forUsername === 'all'
+              ? { ...notification, read: true } 
+              : notification
+          )
+        }));
+      },
+
       // Booking actions
       setSelectedZoneType: (zoneType: ZoneType | 'all') => {
         set({ selectedZoneType: zoneType });
@@ -209,9 +243,10 @@ export const useStore = create<AppState>()(
         set({ selectedDate: date });
       },
       
-      addBooking: async (booking: Omit<Booking, 'id' | 'createdAt' | 'updatedAt' | 'waiterViewed' | 'cookViewed' | 'waiterViewedAt' | 'cookViewedAt'>) => {
+      addBooking: async (booking: Omit<Booking, 'id' | 'createdAt' | 'updatedAt' | 'waiterViewed' | 'cookViewed' | 'waiterViewedAt' | 'cookViewedAt' | 'closed' | 'closedBy' | 'closedAt'>) => {
         try {
           const now = new Date().toISOString();
+          const currentUser = get().currentUser;
           
           // First insert into Supabase - don't modify the dateTime value
           const { data, error } = await supabase
@@ -227,7 +262,9 @@ export const useStore = create<AppState>()(
               phone_number: booking.phoneNumber,
               service_type: get().getZoneById(booking.zoneId)?.type || 'Unknown',
               waiter_viewed: false,
-              cook_viewed: false
+              cook_viewed: false,
+              closed: false,
+              created_by: currentUser?.username || 'unknown'
             })
             .select();
             
@@ -254,8 +291,29 @@ export const useStore = create<AppState>()(
               waiterViewed: data[0].waiter_viewed ?? false,
               cookViewed: data[0].cook_viewed ?? false,
               waiterViewedAt: data[0].waiter_viewed_at ?? undefined,
-              cookViewedAt: data[0].cook_viewed_at ?? undefined
+              cookViewedAt: data[0].cook_viewed_at ?? undefined,
+              closed: data[0].closed ?? false,
+              closedBy: data[0].closed_by ?? undefined,
+              closedAt: data[0].closed_at ?? undefined,
+              createdBy: data[0].created_by ?? currentUser?.username
             };
+            
+            // Create notifications for all users except the one who created the booking
+            const notifications: Notification[] = [];
+            
+            users.forEach(user => {
+              if (user.username !== currentUser?.username) {
+                notifications.push({
+                  id: uuidv4(),
+                  type: 'booking_created',
+                  bookingId: newBooking.id,
+                  message: `${currentUser?.displayName || currentUser?.username || 'Пользователь'} создал(а) новое бронирование для ${newBooking.clientName} на ${format(new Date(newBooking.dateTime), 'dd.MM.yyyy HH:mm')}`,
+                  createdAt: now,
+                  read: false,
+                  forUsername: user.username
+                });
+              }
+            });
             
             // Update local state
             set((state) => {
@@ -283,6 +341,7 @@ export const useStore = create<AppState>()(
               return {
                 bookings: sortedBookings,
                 customers: Array.from(customersMap.values()),
+                notifications: [...state.notifications, ...notifications],
                 isEditingBooking: false,
                 currentBooking: null,
               };
@@ -313,6 +372,9 @@ export const useStore = create<AppState>()(
           if (bookingData.cookViewed !== undefined) updateData.cook_viewed = bookingData.cookViewed;
           if (bookingData.waiterViewedAt !== undefined) updateData.waiter_viewed_at = bookingData.waiterViewedAt;
           if (bookingData.cookViewedAt !== undefined) updateData.cook_viewed_at = bookingData.cookViewedAt;
+          if (bookingData.closed !== undefined) updateData.closed = bookingData.closed;
+          if (bookingData.closedBy !== undefined) updateData.closed_by = bookingData.closedBy;
+          if (bookingData.closedAt !== undefined) updateData.closed_at = bookingData.closedAt;
           
           // Set update timestamp
           updateData.updated_at = new Date().toISOString();
@@ -386,6 +448,80 @@ export const useStore = create<AppState>()(
         } catch (error) {
           console.error('Error updating booking:', error);
           toast.error('Ошибка при обновлении бронирования');
+        }
+      },
+      
+      closeBooking: async (id: string) => {
+        try {
+          const now = new Date().toISOString();
+          const currentUser = get().currentUser;
+          
+          if (!currentUser) {
+            toast.error('Вы должны быть авторизованы для закрытия бронирования');
+            return;
+          }
+          
+          // Update in Supabase
+          const { error } = await supabase
+            .from('bookings')
+            .update({
+              closed: true,
+              closed_by: currentUser.username,
+              closed_at: now,
+              updated_at: now
+            })
+            .eq('id', id);
+            
+          if (error) {
+            console.error('Error closing booking:', error);
+            toast.error('Ошибка при закрытии бронирования');
+            return;
+          }
+          
+          // Get the booking to create notifications
+          const booking = get().bookings.find(b => b.id === id);
+          const notifications: Notification[] = [];
+          
+          if (booking) {
+            users.forEach(user => {
+              if (user.username !== currentUser.username) {
+                notifications.push({
+                  id: uuidv4(),
+                  type: 'booking_closed',
+                  bookingId: id,
+                  message: `${currentUser.displayName || currentUser.username} закрыл(а) бронирование для ${booking.clientName} на ${format(new Date(booking.dateTime), 'dd.MM.yyyy HH:mm')}`,
+                  createdAt: now,
+                  read: false,
+                  forUsername: user.username
+                });
+              }
+            });
+          }
+          
+          // Update local state
+          set((state) => {
+            const updatedBookings = state.bookings.map((booking) =>
+              booking.id === id
+                ? { 
+                    ...booking, 
+                    closed: true, 
+                    closedBy: currentUser.username, 
+                    closedAt: now,
+                    updatedAt: now
+                  }
+                : booking
+            );
+            
+            return {
+              bookings: updatedBookings,
+              notifications: [...state.notifications, ...notifications]
+            };
+          });
+          
+          toast.success('Бронирование успешно закрыто');
+        } catch (error) {
+          console.error('Error closing booking:', error);
+          toast.error('Ошибка при закрытии бронирования');
         }
       },
       

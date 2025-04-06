@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useStore } from '@/lib/store';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
@@ -11,7 +12,7 @@ import { Booking, Zone } from '@/lib/types';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
-import { Users, Calendar, Home, Phone, DollarSign, Clock, UtensilsCrossed } from 'lucide-react';
+import { Users, Calendar, Home, Phone, DollarSign, Clock, UtensilsCrossed, LockClosedIcon } from 'lucide-react';
 
 interface BookingFormProps {
   isOpen: boolean;
@@ -31,7 +32,8 @@ const BookingForm = ({
     editBooking,
     selectedDate,
     isZoneBooked,
-    currentUser
+    currentUser,
+    closeBooking
   } = useStore();
   const isAdmin = currentUser?.role === 'admin';
   const [formData, setFormData] = useState<Partial<Booking & { endTime: string }>>({
@@ -287,7 +289,7 @@ const BookingForm = ({
     if (isEditingBooking && currentBooking) {
       updateBooking(currentBooking.id, bookingDataWithoutEndTime);
     } else {
-      addBooking(bookingDataWithoutEndTime as Omit<Booking, 'id' | 'createdAt' | 'updatedAt'>);
+      addBooking(bookingDataWithoutEndTime as Omit<Booking, 'id' | 'createdAt' | 'updatedAt' | 'waiterViewed' | 'cookViewed' | 'waiterViewedAt' | 'cookViewedAt' | 'closed' | 'closedBy' | 'closedAt'>);
     }
     onClose();
   };
@@ -297,7 +299,15 @@ const BookingForm = ({
     onClose();
   };
 
+  const handleCloseBooking = () => {
+    if (currentBooking && !currentBooking.closed) {
+      closeBooking(currentBooking.id);
+      onClose();
+    }
+  };
+
   const isDisabled = !isAdmin;
+  const isBookingClosed = currentBooking?.closed || false;
 
   if (!isAdmin && !isEditingBooking) {
     return null;
@@ -315,6 +325,28 @@ const BookingForm = ({
             {isEditingBooking ? 'Детали бронирования' : 'Новое бронирование'}
           </DialogTitle>
         </DialogHeader>
+        
+        {isBookingClosed && (
+          <div className="mb-4 p-3 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg flex items-center gap-2">
+            <LockClosedIcon className="h-5 w-5 text-gray-500" />
+            <div>
+              <div className="font-medium">Бронирование закрыто</div>
+              {currentBooking?.closedBy && currentBooking?.closedAt && (
+                <div className="text-sm text-gray-500">
+                  Пользователем {currentBooking.closedBy} {format(new Date(currentBooking.closedAt), 'dd.MM.yyyy HH:mm', { locale: ru })}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+        
+        {currentBooking?.createdBy && currentBooking?.createdAt && (
+          <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg">
+            <div className="text-sm text-gray-500">
+              Создано пользователем {currentBooking.createdBy} {format(new Date(currentBooking.createdAt), 'dd.MM.yyyy HH:mm', { locale: ru })}
+            </div>
+          </div>
+        )}
         
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid grid-cols-3 mb-6">
@@ -340,7 +372,7 @@ const BookingForm = ({
                   <span>Выберите зону</span>
                 </Label>
                 
-                <Select value={formData.zoneId} onValueChange={value => handleSelectChange('zoneId', value)} disabled={isDisabled}>
+                <Select value={formData.zoneId} onValueChange={value => handleSelectChange('zoneId', value)} disabled={isDisabled || isBookingClosed}>
                   <SelectTrigger className="h-12">
                     <SelectValue placeholder="Выберите зону" />
                   </SelectTrigger>
@@ -366,7 +398,7 @@ const BookingForm = ({
                       placeholder="Введите название зоны" 
                       className="h-12 mt-2" 
                       required 
-                      disabled={isDisabled} 
+                      disabled={isDisabled || isBookingClosed} 
                     />
                   </div>
                 )}
@@ -386,7 +418,7 @@ const BookingForm = ({
                 <Button type="button" variant="outline" onClick={handleCancel}>
                   Отмена
                 </Button>
-                {!isDisabled && <Button onClick={moveToNextTab}>
+                {!isDisabled && !isBookingClosed && <Button onClick={moveToNextTab}>
                     Далее
                   </Button>}
               </div>
@@ -400,7 +432,7 @@ const BookingForm = ({
                   <Users className="h-4 w-4 text-green-600" />
                   <span>Имя клиента</span>
                 </Label>
-                <Input id="clientName" name="clientName" value={formData.clientName} onChange={handleChange} placeholder="Введите имя клиента" className="h-12" required disabled={isDisabled} />
+                <Input id="clientName" name="clientName" value={formData.clientName} onChange={handleChange} placeholder="Введите имя клиента" className="h-12" required disabled={isDisabled || isBookingClosed} />
               </div>
               
               <div className="space-y-2">
@@ -408,14 +440,14 @@ const BookingForm = ({
                   <Phone className="h-4 w-4 text-green-600" />
                   <span>Номер телефона</span>
                 </Label>
-                <Input id="phoneNumber" name="phoneNumber" value={formData.phoneNumber} onChange={handleChange} placeholder="+7 (XXX) XXX-XX-XX" className="h-12" required disabled={isDisabled} />
+                <Input id="phoneNumber" name="phoneNumber" value={formData.phoneNumber} onChange={handleChange} placeholder="+7 (XXX) XXX-XX-XX" className="h-12" required disabled={isDisabled || isBookingClosed} />
               </div>
               
               <div className="flex justify-between gap-2 pt-4">
                 <Button type="button" variant="outline" onClick={moveToPrevTab}>
                   Назад
                 </Button>
-                {!isDisabled && <Button onClick={moveToNextTab}>
+                {!isDisabled && !isBookingClosed && <Button onClick={moveToNextTab}>
                     Далее
                   </Button>}
               </div>
@@ -440,7 +472,7 @@ const BookingForm = ({
                     className="h-12" 
                     placeholder="Введите стоимость"
                     required 
-                    disabled={isDisabled} 
+                    disabled={isDisabled || isBookingClosed} 
                   />
                 </div>
                 
@@ -459,7 +491,7 @@ const BookingForm = ({
                     className="h-12" 
                     placeholder="Введите предоплату"
                     required 
-                    disabled={isDisabled} 
+                    disabled={isDisabled || isBookingClosed} 
                   />
                 </div>
               </div>
@@ -480,7 +512,7 @@ const BookingForm = ({
                     className="h-12" 
                     placeholder="Введите количество"
                     required 
-                    disabled={isDisabled} 
+                    disabled={isDisabled || isBookingClosed} 
                   />
                 </div>
                 
@@ -496,7 +528,7 @@ const BookingForm = ({
                     onChange={handleDateChange} 
                     className="h-12" 
                     required 
-                    disabled={isDisabled} 
+                    disabled={isDisabled || isBookingClosed} 
                   />
                 </div>
               </div>
@@ -510,7 +542,7 @@ const BookingForm = ({
                   <Select 
                     value={getTimeFromISOString(formData.dateTime)} 
                     onValueChange={(value) => handleTimeChange('start', value)}
-                    disabled={isDisabled}
+                    disabled={isDisabled || isBookingClosed}
                   >
                     <SelectTrigger className="h-12">
                       <SelectValue placeholder="Выберите время" />
@@ -533,7 +565,7 @@ const BookingForm = ({
                   <Select 
                     value={getTimeFromISOString(formData.endTime)} 
                     onValueChange={(value) => handleTimeChange('end', value)}
-                    disabled={isDisabled}
+                    disabled={isDisabled || isBookingClosed}
                   >
                     <SelectTrigger className="h-12">
                       <SelectValue placeholder="Выберите время" />
@@ -554,16 +586,28 @@ const BookingForm = ({
                   <UtensilsCrossed className="h-4 w-4 text-green-600" />
                   <span>Меню (опционально)</span>
                 </Label>
-                <Textarea id="menu" name="menu" value={formData.menu || ''} onChange={handleChange} placeholder="Описание заказанных блюд" rows={3} disabled={isDisabled} />
+                <Textarea id="menu" name="menu" value={formData.menu || ''} onChange={handleChange} placeholder="Описание заказанных блюд" rows={3} disabled={isDisabled || isBookingClosed} />
               </div>
               
               <div className="flex justify-between gap-2 pt-4">
                 <Button type="button" variant="outline" onClick={moveToPrevTab}>
                   Назад
                 </Button>
-                {!isDisabled && <Button onClick={handleSubmit}>
-                    {isEditingBooking ? 'Сохранить' : 'Добавить бронирование'}
-                  </Button>}
+                <div className="flex gap-2">
+                  {isEditingBooking && !isBookingClosed && !isDisabled && (
+                    <Button 
+                      variant="destructive" 
+                      onClick={handleCloseBooking}
+                      className="bg-gray-600 hover:bg-gray-700 text-white"
+                    >
+                      <LockClosedIcon className="h-4 w-4 mr-2" />
+                      Закрыть бронь
+                    </Button>
+                  )}
+                  {!isDisabled && !isBookingClosed && <Button onClick={handleSubmit}>
+                      {isEditingBooking ? 'Сохранить' : 'Добавить бронирование'}
+                    </Button>}
+                </div>
               </div>
             </div>
           </TabsContent>

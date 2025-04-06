@@ -40,6 +40,20 @@ export interface Booking {
   cookViewed: boolean;
   waiterViewedAt?: string;
   cookViewedAt?: string;
+  closed: boolean;
+  closedBy?: string;
+  closedAt?: string;
+  createdBy?: string;
+}
+
+export interface Notification {
+  id: string;
+  type: 'booking_created' | 'booking_closed';
+  bookingId: string;
+  message: string;
+  createdAt: string;
+  read: boolean;
+  forUsername: string;
 }
 
 export interface Customer {
@@ -64,6 +78,7 @@ export interface AppState {
   zones: Zone[];
   bookings: Booking[];
   customers: Customer[];
+  notifications: Notification[];
   selectedZoneType: ZoneType | 'all';
   selectedDate: string;
   isEditingBooking: boolean;
@@ -83,11 +98,17 @@ export interface AppState {
   // Booking actions
   setSelectedZoneType: (zoneType: ZoneType | 'all') => void;
   setSelectedDate: (date: string) => void;
-  addBooking: (booking: Omit<Booking, 'id' | 'createdAt' | 'updatedAt' | 'waiterViewed' | 'cookViewed' | 'waiterViewedAt' | 'cookViewedAt'>) => void;
+  addBooking: (booking: Omit<Booking, 'id' | 'createdAt' | 'updatedAt' | 'waiterViewed' | 'cookViewed' | 'waiterViewedAt' | 'cookViewedAt' | 'closed' | 'closedBy' | 'closedAt'>) => void;
   updateBooking: (id: string, bookingData: Partial<Booking>) => void;
   deleteBooking: (id: string) => void;
   editBooking: (booking: Booking | null) => void;
   markAsViewed: (id: string, role: 'waiter' | 'cook') => Promise<void>;
+  closeBooking: (id: string) => Promise<void>;
+  
+  // Notification actions
+  getNotifications: () => Notification[];
+  markNotificationAsRead: (id: string) => void;
+  markAllNotificationsAsRead: () => void;
   
   // Customer actions
   getCustomers: () => Customer[];
